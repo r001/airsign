@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+#
+# this program has only been tested with parity ethereum client!
+tx=`seth rpc signer_requestsToConfirm | tail -n1 | jshon -e payload -e sendTransaction`
+qr "$tx"
+echo $tx

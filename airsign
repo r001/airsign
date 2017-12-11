@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+
+tx=`zbarcam --raw`
+echo $tx
+txkeys=`echo $tx|jshon -k|sed -e "s/\n/ /g"`
+signjson=''
+for row in $txkeys ; do 
+	[[ $row == "condition" ]] && [[ `echo $tx | jshon -e "condition" -u` -eq "null"  ]] && continue
+	[[ $row == "nonce"  ]] && [[ `echo $tx | jshon -e "nonce" -u` -eq "null"  ]] && continue
+	signjson=$signjson" -s `echo $tx | jshon -e $row -u` -i $row"
+done	
+signjson="seth rpc eth_signTransaction -- -n {}"$signjson" -i append"
+raw=$($signjson)
+raw=`echo $raw| cut -d " " -f 2` 
+qr $raw

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#
+raw=`zbarcam --raw --nodisplay| tee >(ifne killall zbarcam)`
+printf "Raw TX: '$raw'\nMining of tx in progress...\n"
+txhash=`seth publish $raw` && printf "Tx mined! Hash: $txhash\n"
