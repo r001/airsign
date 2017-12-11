@@ -27,7 +27,7 @@ cd seth
 make install
 cd .. 
 
-# the following will install a qr code generator
+# the following will install a QR code generator
 pip install qrcode
 ```
 
@@ -39,16 +39,17 @@ pip install qrcode
 ## Usage
 
 1. On **connected** do whatever transaction with `parity` and wait for the signer to come up. **Do not sign the transaction on connedted!** The whole point of doing airsign is to avoid disposing your passwords on the **connected**.
-2. On **connected** run `airdrop`. This will read the transaction and create a qr code from it on the command line.
-3. On **sealed** run `airsign` and read the QR code generated in (2.). You will see that reading wass successful when the transaction is written on the screen. This will pop a signer window on parity (if the account is not unlocked), enter your password on **sealed**. Once done, a qr code will be generated on the command line ontaining the signed raw transaction.
+2. On **connected** run `airdrop`. This will read the transaction and create a QR code from it on the command line.
+3. On **sealed** run `airsign` and read the QR code generated in (2.). You will see that reading was successful when the transaction is written on the screen. This will pop a signer window on parity (if the account is not unlocked), enter your password on **sealed**. Once done, a QR code will be generated on the command line containing the signed raw transaction.
 4. On **connected** read the QR code generated in (3.) by executing `airpublish`, this will send your transaction on the chain. The command will return the transaction hash of the mined transaction. 
 
 Note 1: Please allow enough time for the transaction to be mined. It can take several miutes. It is perfectly safe to publish transaction data. 
-Note 2: If the (4.) was interrupted you can start it over until the transaction is mined. 
+
+Note 2: If (4.) was interrupted you can start it over until the transaction is mined. 
 
 ## Authors
 
-* **Robert Horvath** - *Initial work* - [PurpleBooth](https://github.com/r001)
+* **Robert Horvath** - *Initial work* - [airsign](https://github.com/r001/airsign)
 
 ## License
 
