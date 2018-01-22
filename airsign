@@ -3,7 +3,7 @@
 set -x
 tx=`termux-clipboard-get`
 echo $tx
-txkeys=`echo $tx|jshon -k|sed -e "s/\\[/(/g"|sed -e "s/\\]/)/g"|sed -e "s/\"//g"|sed -e "s/,/ /g"`
+txkeys=$(`echo $tx|jshon -k|sed -e "s/\\[/(/g"|sed -e "s/\\]/)/g"|sed -e "s/\"//g"|sed -e "s/,/ /g"`)
 signjson=''
 for row in $txkeys ; do 
 	[[ $row == "condition" ]] && [[ `echo $tx | jshon -e "condition" -u` -eq "null"  ]] && continue
