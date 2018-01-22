@@ -3,13 +3,15 @@
 set -x
 tx=`termux-clipboard-get`
 echo $tx
-txkeys=$(`echo $tx|jshon -k|sed -e "s/\\[/(/g"|sed -e "s/\\]/)/g"|sed -e "s/\"//g"|sed -e "s/,/ /g"`)
+txkeys=`echo $tx|jshon -k|sed -e "s/\\[//g"|sed -e "s/\\]//g"|sed -e "s/\"//g"|sed -e "s/,/ /g"|sed -e "s/'//g"`
+txkeys=($txkeys)
 signjson=''
-for row in $txkeys ; do 
+for row in "${txkeys[@]}" ; do 
 	[[ $row == "condition" ]] && [[ `echo $tx | jshon -e "condition" -u` -eq "null"  ]] && continue
+	[[ $row == "gasPrice" ]] && ro=gas-price && signjson=$signjson" --$ro `echo $tx | jshon -e $ro -u`"&& continue
+	[[ $row == "gas" ]] && ro=gas-limit && signjson=$signjson" --$ro `echo $tx | jshon -e $ro -u`" && continue
 	signjson=$signjson" --$row `echo $tx | jshon -e $row -u`"
 done	
-signjson="ethsign $signjson"
+signjson="ethsign tx $signjson"
 raw=$($signjson)
-raw=`echo $raw| cut -d " " -f 2`
-qr $raw
+#termux-clipboard-set $raw
