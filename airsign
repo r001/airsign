@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
 #
-
-tx=`zbarcam --raw`
+set -x
+tx=`termux-clipboard-get`
 echo $tx
 txkeys=`echo $tx|jshon -k|sed -e "s/\n/ /g"`
 signjson=''
 for row in $txkeys ; do 
 	[[ $row == "condition" ]] && [[ `echo $tx | jshon -e "condition" -u` -eq "null"  ]] && continue
-	[[ $row == "nonce"  ]] && [[ `echo $tx | jshon -e "nonce" -u` -eq "null"  ]] && continue
-	signjson=$signjson" -s `echo $tx | jshon -e $row -u` -i $row"
+	signjson=$signjson" --$row `echo $tx | jshon -e $row -u`"
 done	
-signjson="seth rpc eth_signTransaction -- -n {}"$signjson" -i append"
+signjson="ethsign $signjson"
 raw=$($signjson)
-raw=`echo $raw| cut -d " " -f 2` 
+raw=`echo $raw| cut -d " " -f 2`
 qr $raw
