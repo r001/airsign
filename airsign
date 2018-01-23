@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
 #
-set -x
 tx=`termux-clipboard-get`
 echo $tx
 txkeys=`echo $tx|jshon -k|sed -e "s/\\[//g"|sed -e "s/\\]//g"|sed -e "s/\"//g"|sed -e "s/,/ /g"|sed -e "s/'//g"`
 txkeys=($txkeys)
 signjson=''
+echo "Please wait 10 sec ..."
 for row in "${txkeys[@]}" ; do 
 	[[ $row == "condition" ]] && [[ `echo $tx | jshon -e "condition" -u` -eq "null"  ]] && continue
 	[[ $row == "gasPrice" ]] && ro=gas-price && signjson=$signjson" --$ro `echo $tx | jshon -e $row -u`"&& continue
 	[[ $row == "gas" ]] && ro=gas-limit && signjson=$signjson" --$ro `echo $tx | jshon -e $row -u`" && continue
 	signjson=$signjson" --$row `echo $tx | jshon -e $row -u`"
 done	
-signjson="ethsign tx $signjson"
+signjson="ethsign tx $signjson --chain-id 1"
 raw=$($signjson)
-#termux-clipboard-set $raw
+termux-clipboard-set $raw
+echo "Tx copied to clipboard."
