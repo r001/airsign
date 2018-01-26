@@ -5,6 +5,7 @@ echo $tx
 txkeys=`echo $tx|jshon -k|sed -e "s/\\[//g"|sed -e "s/\\]//g"|sed -e "s/\"//g"|sed -e "s/,/ /g"|sed -e "s/'//g"`
 txkeys=($txkeys)
 signjson=''
+echo "Please wait 10 sec ..."
 for row in "${txkeys[@]}" ; do 
 	[[ $row == "condition" ]] && [[ `echo $tx | jshon -e "condition" -u` -eq "null"  ]] && continue
 	[[ $row == "gasPrice" ]] && ro=gas-price && signjson=$signjson" --$ro `echo $tx | jshon -e $row -u`"&& continue
@@ -15,3 +16,4 @@ signjson="ethsign tx $signjson --chain-id 1"
 raw=$($signjson)
 echo $raw
 termux-clipboard-set $raw
+echo "Tx copied to clipboard."
