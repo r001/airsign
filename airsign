@@ -17,7 +17,9 @@ raw=$($signjson)
 echo $raw
 linecount=${1:-150}
 qr_count=0;
-for $txl in `echo $raw|sed -r "s/(.{$linecount})/\\1 /g"`; do
+for txl in `echo $raw|sed -r "s/(.{$linecount})/\\1 /g"`; do
+	qr_count=$(( $qr_count + 1 ))
 	echo "$qr_count. QR code to transmit"
 	qr "$qr_count-$txl"
+	read -n 1 -s
 done
