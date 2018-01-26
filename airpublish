@@ -1,5 +1,22 @@
 #!/usr/bin/env bash
 #
-raw=`zbarcam --raw --nodisplay| tee >(ifne killall zbarcam)`
+echo "Hit CTRL-c to stop reading QR code sequence!"
+trap "break" SIGINT
+new=''
+$pcount=1
+while : 
+do
+	raw=`zbarcam --raw --nodisplay| tee >(ifne killall zbarcam)`
+	raw=`echo $raw|sed -e 's/^\(\d\+\)-\(.*\)/\2/"'`
+	count=`echo $raw|sed -e 's/^\(\d\+\)-\(.*\)/\1/"'`
+	echo "$count. QR code received."
+	if [[ $count -eq $pcount ]]; then
+		new=$new$raw
+		pcount=$(( $pcount + 1 ))
+	else
+		echo "You sent $count. QR code, but we expect the $pcount. QR code! Repeat pls!"
+	fi
+
+done
 printf "Raw TX: '$raw'\nMining of tx in progress...\n"
 txhash=`seth publish $raw` && printf "Tx mined! Hash: $txhash\n"
