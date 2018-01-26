@@ -3,20 +3,21 @@
 echo "Hit CTRL-c to stop reading QR code sequence!"
 trap "break" SIGINT
 new=''
-$pcount=1
+pcount=1
 while : 
 do
-	raw=`zbarcam --raw --nodisplay| tee >(ifne killall zbarcam)`
-	raw=`echo $raw|sed -e 's/^\(\d\+\)-\(.*\)/\2/"'`
-	count=`echo $raw|sed -e 's/^\(\d\+\)-\(.*\)/\1/"'`
+	raw="`zbarcam --raw --nodisplay| tee >(ifne killall zbarcam)`"
+	tx="`echo $raw|sed -e 's/^\([0-9]\+\)-\(.*\)/\2/'`"
+	count="`echo $raw|sed -e 's/^\([0-9]\+\)-\(.*\)/\1/'`"
 	echo "$count. QR code received."
 	if [[ $count -eq $pcount ]]; then
-		new=$new$raw
-		pcount=$(( $pcount + 1 ))
+		new="$new$tx"
+		pcount="$(( $pcount + 1 ))"
 	else
 		echo "You sent $count. QR code, but we expect the $pcount. QR code! Repeat pls!"
 	fi
+	sleep 1
 
 done
-printf "Raw TX: '$raw'\nMining of tx in progress...\n"
-txhash=`seth publish $raw` && printf "Tx mined! Hash: $txhash\n"
+printf "Raw TX: '$new'\nMining of tx in progress...\n"
+txhash=`seth publish $new` && printf "Tx mined! Hash: $txhash\n"

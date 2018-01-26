@@ -15,7 +15,7 @@ done
 signjson="ethsign tx $signjson --chain-id 1"
 raw=$($signjson)
 echo $raw
-linecount=${1:-150}
+linecount=${1:-100}
 qr_count=0;
 for txl in `echo $raw|sed -r "s/(.{$linecount})/\\1 /g"`; do
 	qr_count=$(( $qr_count + 1 ))
