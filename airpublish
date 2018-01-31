@@ -20,4 +20,4 @@ do
 
 done
 printf "Raw TX: '$new'\nMining of tx in progress...\n"
-txhash=`seth publish $new` && printf "Tx mined! Hash: $txhash\n"
+txhash=`seth publish $new` && printf "Tx published! Hash: $txhash\n"
