@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+export HOME=/data/data/com.termux/files/home
+cd $HOME 
+pkg install golang git termux-api nodejs tar clang vim python 
+npm install jshon 
+pip install qrcode  
+ln –s $HOME/node_modules/jshon/jshon $HOME/../usr/bin/jshon 
+git clone https://github.com/dapphub/ethsign.git 
+cd ethsign 
+git checkout 1d05e5002ff03a08d29273ed31dd9731beb542ad  
+cd $HOME 
+git clone https://github.com/ethereum/goethereum.git 
+mkdir -p go/src/github.com/ethereum/ 
+mv go-ethereum go/src/github.com/ethereum 
+cd go/src/github.com/ethereum 
+git checkout v1.7.3 
+cd $HOME 
+git clone https://github.com/urfave/cli 
+mkdir –p go/src/gopkg.in/urfave/ 
+mv cli go/src/gopkg.in/urfave/ 
+cd go/src/gopkg.in/urfave/ 
+mv cli cli.v1 
+cd cli.v1 
+git checkout v1.19.1 
+cd $HOME 
+cit clone https://go.googlesource.com/crypto 
+mkdir –p go/src/golang.org/x/ 
+mv crypto go/src/golang.org/x/ 
+cd go/src/golang.org/x/crypto 
+git checkout 94eea52f7b742c7cbe0b03b22f0c4c8631ece122 
+cd $HOME 
+git clone https://go.googlesource.com/sys 
+mkdir –p go/src/golang.org/x/ 
+mv sys go/src/golang.org/x/ 
+cd go/src/golang.org/x/sys 
+git checkout 53aa286056ef226755cd898109dbcdaba8ac0b81 
+cd $HOME 
+cd ethsign 
+golang install ethsign.go 
+ln –s $HOME/ethsign/ethsign $HOME/../usr/bin/ethsign 
