@@ -1,16 +1,25 @@
 #!/usr/bin/env bash
 #
-
-tx=`zbarcam --raw`
+tx=`termux-clipboard-get`
 echo $tx
-txkeys=`echo $tx|jshon -k|sed -e "s/\n/ /g"`
+txkeys=`echo $tx|jshon -k|sed -e "s/\\[//g"|sed -e "s/\\]//g"|sed -e "s/\"//g"|sed -e "s/,/ /g"|sed -e "s/'//g"`
+txkeys=($txkeys)
 signjson=''
-for row in $txkeys ; do 
+echo "Please wait 10 sec ..."
+for row in "${txkeys[@]}" ; do 
 	[[ $row == "condition" ]] && [[ `echo $tx | jshon -e "condition" -u` -eq "null"  ]] && continue
-	[[ $row == "nonce"  ]] && [[ `echo $tx | jshon -e "nonce" -u` -eq "null"  ]] && continue
-	signjson=$signjson" -s `echo $tx | jshon -e $row -u` -i $row"
+	[[ $row == "gasPrice" ]] && ro=gas-price && signjson=$signjson" --$ro `echo $tx | jshon -e $row -u`"&& continue
+	[[ $row == "gas" ]] && ro=gas-limit && signjson=$signjson" --$ro `echo $tx | jshon -e $row -u`" && continue
+	signjson=$signjson" --$row `echo $tx | jshon -e $row -u`"
 done	
-signjson="seth rpc eth_signTransaction -- -n {}"$signjson" -i append"
+signjson="ethsign tx $signjson --chain-id 1"
 raw=$($signjson)
-raw=`echo $raw| cut -d " " -f 2` 
-qr $raw
+echo $raw
+linecount=${1:-100}
+qr_count=0;
+for txl in `echo $raw|sed -r "s/(.{$linecount})/\\1 /g"`; do
+	qr_count=$(( $qr_count + 1 ))
+	echo "$qr_count. QR code to transmit"
+	qr "$qr_count-$txl"
+	read -n 1 -s
+done
