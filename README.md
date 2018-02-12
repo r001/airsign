@@ -33,15 +33,18 @@ git checkout android-termux
 	- If you want to go extremel secure, then take a fresh installed pc, install parity there, create accounts there, and generate QR code from the account json data, read that QR code to **offline phone**. 
 	
 On **online pc** do the followings:
+
 4. Execute the followings on **online pc**:
 	- install parity from https://github.com/paritytech/parity/releases
 	- sync parity
+
 5. Install the same accounts that you have installed to **offline phone** to **online pc**. You have three alternatives here:
-	Alternative a: Recommended method: 
+	- Alternative a: Recommended method: 
 		1. Create an account on **online pc**.
 		2. Open the account key file and change the "account" fields addresss to the address of your account created in 3. ! This way the account can not be cracked, since the real account data is not available on the **online pc**, but parity will still handle the account as it was valid.
-	Alternetive b: Create **external account**: In parity create new account and chose "External" in the menu. This method is secure, but a few dapps can not use it (eg. www.oasisdex.com), so it is not recommended. The advantage of this method is that parity itself will generate a QR code that has to be signed by the **offline phone**. See later. 
-	Alternative c: Less secure method: Simply copy accounts to use for parity. Using this method makes it possible to brute force attack your password if adversary gets access to your account data. 
+	- Alternetive b: Create **external account**: In parity create new account and chose "External" in the menu. This method is secure, but a few dapps can not use it (eg. www.oasisdex.com), so it is not recommended. The advantage of this method is that parity itself will generate a QR code that has to be signed by the **offline phone**. See later. 
+	- Alternative c: Less secure method: Simply copy accounts to use for parity. Using this method makes it possible to brute force attack your password if adversary gets access to your account data. 
+
 6. Do the followings:
 ```
 git clone https://github.com/r001/airsign 
