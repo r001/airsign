@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/data/data/com.termux/files/usr/bin/env bash
 export HOME=/data/data/com.termux/files/home
 cd $HOME 
 pkg install golang git termux-api nodejs tar clang vim python 
