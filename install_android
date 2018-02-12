@@ -36,5 +36,5 @@ cd go/src/golang.org/x/sys
 git checkout 53aa286056ef226755cd898109dbcdaba8ac0b81 
 cd $HOME 
 cd ethsign 
-golang install ethsign.go 
+go install ethsign.go 
 ln –s $HOME/ethsign/ethsign $HOME/../usr/bin/ethsign 
