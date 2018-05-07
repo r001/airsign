@@ -1,6 +1,7 @@
 set -e
 #!/data/data/com.termux/files/usr/bin/env bash
 export HOME=/data/data/com.termux/files/home
+export GOBIN=$HOME/ethsign
 cd $HOME 
 pkg install golang git termux-api nodejs tar clang vim python 
 npm install jshon 
