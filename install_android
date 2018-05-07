@@ -13,7 +13,7 @@ cd $HOME
 git clone https://github.com/ethereum/go-ethereum.git 
 mkdir -p go/src/github.com/ethereum/ 
 mv go-ethereum go/src/github.com/ethereum 
-cd go/src/github.com/ethereum 
+cd go/src/github.com/ethereum/go-ethereum
 git checkout v1.7.3 
 cd $HOME 
 git clone https://github.com/urfave/cli 
