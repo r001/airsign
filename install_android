@@ -10,7 +10,7 @@ git clone https://github.com/dapphub/ethsign.git
 cd ethsign 
 git checkout 1d05e5002ff03a08d29273ed31dd9731beb542ad  
 cd $HOME 
-git clone https://github.com/ethereum/goethereum.git 
+git clone https://github.com/ethereum/go-ethereum.git 
 mkdir -p go/src/github.com/ethereum/ 
 mv go-ethereum go/src/github.com/ethereum 
 cd go/src/github.com/ethereum 
