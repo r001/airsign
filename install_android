@@ -23,7 +23,7 @@ mv cli cli.v1
 cd cli.v1 
 git checkout v1.19.1 
 cd $HOME 
-cit clone https://go.googlesource.com/crypto 
+git clone https://go.googlesource.com/crypto 
 mkdir –p go/src/golang.org/x/ 
 mv crypto go/src/golang.org/x/ 
 cd go/src/golang.org/x/crypto 
