@@ -1,5 +1,5 @@
-set -e
 #!/data/data/com.termux/files/usr/bin/env bash
+set -e
 export HOME=/data/data/com.termux/files/home
 export GOBIN=$HOME/ethsign
 cd $HOME 
