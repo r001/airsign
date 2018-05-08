@@ -3,7 +3,7 @@ set -e
 export HOME=/data/data/com.termux/files/home
 export GOBIN=$HOME/ethsign
 cd $HOME 
-pkg install golang git termux-api nodejs tar clang vim python 
+pkg install golang git termux-api nodejs tar clang vim python sed
 npm install jshon 
 pip install qrcode  
 ln -s $HOME/node_modules/jshon/jshon $HOME/../usr/bin/jshon 
