@@ -37,6 +37,6 @@ git checkout 53aa286056ef226755cd898109dbcdaba8ac0b81
 cd $HOME 
 cd dapptools/src/ethsign 
 go install ethsign.go 
-ln –s $HOME/dapptools/src/ethsign/ethsign $HOME/../usr/bin/ethsign 
+cp ethsign $HOME/../usr/bin
 cd airsign
 npm install
