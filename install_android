@@ -1,7 +1,6 @@
 #!/data/data/com.termux/files/usr/bin/env bash
 set -e
 export HOME=/data/data/com.termux/files/home
-npm install
 cd $HOME 
 pkg install golang git termux-api nodejs tar clang vim python 
 pip install qrcode  
@@ -38,3 +37,5 @@ cd $HOME
 cd dapptools/src/ethsign 
 golang install ethsign.go 
 ln –s $HOME/dapptools/src/ethsign/ethsign $HOME/../usr/bin/ethsign 
+cd airsign
+npm install
