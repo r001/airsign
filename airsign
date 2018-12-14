@@ -45,7 +45,7 @@ api.clipboardGet()
   var fullCmd = 'ethsign' + cmd + args
   shell.exec(fullCmd, function (code, stdout, stderr) {
     if (code !== 0) throw new Error('Could not execute: ' + fullCmd)
-  if (shell.exec('qr "eths: ' + stdout + '"').code !== 0){
+  if (shell.exec('qr "eths: ' + stdout + '"').code !== 0) {
     throw new Error('qr returned error')
   }
   })
