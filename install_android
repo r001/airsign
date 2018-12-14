@@ -38,5 +38,5 @@ cd $HOME
 cd dapptools/src/ethsign 
 go install ethsign.go 
 cp ethsign $HOME/../usr/bin
-cd airsign
+cd $HOME/airsign
 npm install
