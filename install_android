@@ -1,19 +1,18 @@
 #!/data/data/com.termux/files/usr/bin/env bash
 export HOME=/data/data/com.termux/files/home
+npm install
 cd $HOME 
 pkg install golang git termux-api nodejs tar clang vim python 
-npm install jshon 
 pip install qrcode  
-ln –s $HOME/node_modules/jshon/jshon $HOME/../usr/bin/jshon 
-git clone https://github.com/dapphub/ethsign.git 
-cd ethsign 
-git checkout 1d05e5002ff03a08d29273ed31dd9731beb542ad  
+git clone https://github.com/dapphub/dapptools.git
+cd dapptools 
+git checkout 72037d4e32fc5bf9e66a03ba70689a839139a7b8  
 cd $HOME 
 git clone https://github.com/ethereum/goethereum.git 
 mkdir -p go/src/github.com/ethereum/ 
 mv go-ethereum go/src/github.com/ethereum 
 cd go/src/github.com/ethereum 
-git checkout v1.7.3 
+git checkout v1.8.1 
 cd $HOME 
 git clone https://github.com/urfave/cli 
 mkdir –p go/src/gopkg.in/urfave/ 
@@ -35,6 +34,6 @@ mv sys go/src/golang.org/x/
 cd go/src/golang.org/x/sys 
 git checkout 53aa286056ef226755cd898109dbcdaba8ac0b81 
 cd $HOME 
-cd ethsign 
+cd dapptools/src/ethsign 
 golang install ethsign.go 
-ln –s $HOME/ethsign/ethsign $HOME/../usr/bin/ethsign 
+ln –s $HOME/dapptools/src/ethsign/ethsign $HOME/../usr/bin/ethsign 
