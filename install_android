@@ -3,7 +3,7 @@ set -e
 export HOME=/data/data/com.termux/files/home
 export GOBIN=$HOME/dapptools/src/ethsign
 cd $HOME 
-pkg install golang git termux-api nodejs tar clang vim python 
+pkg install golang git termux-api nodejs tar clang vim python yarn 
 pip install qrcode  
 git clone https://github.com/dapphub/dapptools.git
 cd dapptools 
@@ -39,4 +39,4 @@ cd dapptools/src/ethsign
 go install ethsign.go 
 cp ethsign $HOME/../usr/bin
 cd $HOME/airsign
-npm install
+yarn install
