@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+raw=$(cat "$1")
+linecount=${2:-400}
+qr_count=0;
+for txl in $(echo "$raw"|sed -r "s/(.{$linecount})/\\1 /g"); do
+        qr_count=$(( qr_count + 1 ))
+        echo "$qr_count. QR code to transmit"
+        qr "$qr_count-$txl"
+        read -r -n 1 -s
+done
