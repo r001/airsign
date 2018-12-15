@@ -6,6 +6,7 @@ const ethUtil = require('ethereumjs-util')
 const BN = require('bn.js')
 const fs = require('fs')
 const prompt = require('prompt')
+var qrcode = require('qrcode-terminal')
 
 const schema = { properties: {
 	password: { hidden: true },
@@ -64,10 +65,7 @@ api.clipboardGet()
           shell.rm('-f', ai + 'pw')
           if (code !== 0) throw new Error('Could not execute: ' + fullCmd)
 	  console.log('aaastdout:' + stdout.replace(/\n/g,''))
-          if (shell.exec('qr eths:' + stdout.replace(/\n/g,'')).code !== 0) {
-          throw new Error('qr returned error')
-          }
-        })
+          qrcode.generate('eths:' + stdout.replace(/\n/g,''))
       })
     })
   })
