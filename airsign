@@ -67,7 +67,7 @@ api.clipboardGet()
           if (code !== 0) throw new Error('Could not execute: ' + fullCmd)
           const signature = 'eths:/?s=' + stdout.replace(/\n/g, '')
           console.log('signature: ' + signature)
-          QRCode.toString(signature, (err, str) => {
+          QRCode.toString(signature, {type: 'terminal'}, (err, str) => {
             if (err) throw new Error(err)
             console.log(str)
           })
