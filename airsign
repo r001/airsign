@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const api = require('termux')
-const decode = require('qr-encode').decode
+const decode = require('qr-encoding').decode
 var shell = require('shelljs')
 const ethUtil = require('ethereumjs-util')
 const BN = require('bn.js')
@@ -13,41 +13,43 @@ api.clipboardGet()
     var args = ''
     var cmd = ''
     var fromAddr
-    shell.exec('ethsign ls', function (code, stdout, stderr) {
+    args += ' --key-store /data/data/com.termux/files/home/airsign/.ethereum/keystore/'
+    var fullCmd = 'ethsign ls' + cmd + args
+    shell.exec(fullCmd, function (code, stdout, stderr) {
       if (code !== 0) throw new Error('ethsign ls: Error:' + stderr)
-      stdout = stdout.replace(/^\s*(\S+)\s.*$/mg, '$1')
-      var addresses = stdout.split('\n')
-      var re = new RegExp('/^' + sigParams.from_part + '$/', '')
-      fromAddr = addresses.filter(add => add.match(re))
+      var addr = stdout.replace(/^\s*(\S+)\s.*$/mg, '$1')
+      var addresses = addr.toLowerCase().split('\n')
+      var re = new RegExp(sigParams.from_part.toLowerCase())
+      fromAddr = addresses.find(add => add.match(re))
       if (!fromAddr) throw new Error('Address not found for: ' + sigParams.from_part)
-    })
+      switch (sigParams.type) {
+        case 'sign_message':
+          cmd += ' msg'
+          args += ' --data ' + sigParams.payload
+          args += ' --from ' + fromAddr
+          break
+        case 'sign_transaction':
+          cmd += ' tx'
+          args += ' --from ' + fromAddr
+          args += ' --to ' + sigParams.payload.to
+          args += ' --gas-price ' + h2i(sigParams.payload.gasPrice)
+          args += ' --gas-limit ' + h2i(sigParams.payload.gasLimit)
+          args += ' --chain-id ' + sigParams.payload.chainId.toString()
+          args += ' --nonce ' + h2i(sigParams.payload.nonce)
+          args += ' --value ' + sigParams.payload.value
+          args += ' --data ' + sigParams.payload.data
+          break
+        default:
+          throw new Error('Not supported: ' + sigParams.type)
+    }
     args += ' --sig'
-    switch (sigParams.type) {
-      case 'sign_message':
-        cmd += ' msg'
-        args += ' --data ' + sigParams.payload
-        args += ' --from ' + fromAddr
-        break
-      case 'sign_transaction':
-        cmd += ' tx'
-        args += ' --from ' + fromAddr
-        args += ' --to ' + sigParams.payload.to
-        args += ' --gas-price ' + h2i(sigParams.payload.gasPrice)
-        args += ' --gas-limit ' + h2i(sigParams.payload.gasLimit)
-        args += ' --chain-id ' + sigParams.payload.chainId.toString()
-        args += ' --nonce ' + h2i(sigParams.payload.nonce)
-        args += ' --value ' + sigParams.payload.value
-        args += ' --data ' + sigParams.payload.data
-        break
-      default:
-        throw new Error('Not supported: ' + sigParams.type)
-  }
-  var fullCmd = 'ethsign' + cmd + args
-  shell.exec(fullCmd, function (code, stdout, stderr) {
-    if (code !== 0) throw new Error('Could not execute: ' + fullCmd)
-  if (shell.exec('qr "eths: ' + stdout + '"').code !== 0) {
-    throw new Error('qr returned error')
-  }
+    fullCmd = 'ethsign' + cmd + args
+    shell.exec(fullCmd, function (code, stdout, stderr) {
+      if (code !== 0) throw new Error('Could not execute: ' + fullCmd)
+      if (shell.exec('qr "eths: ' + stdout + '"').code !== 0) {
+      throw new Error('qr returned error')
+      }
+    })
   })
 })
 function h2i (hex) {
