@@ -21,7 +21,7 @@ api.clipboardGet()
     var fromAddr
     args += ' --key-store ' + ai + '.ethereum/keystore/'
     var fullCmd = 'ethsign ls' + cmd + args
-    shell.exec(fullCmd, function (code, stdout, stderr) {
+    shell.exec(fullCmd, {silent: true}, function (code, stdout, stderr) {
       if (code !== 0) throw new Error('ethsign ls: Error:' + stderr)
       var addr = stdout.replace(/^\s*(\S+)\s.*$/mg, '$1')
       var addresses = addr.toLowerCase().split('\n')
@@ -56,14 +56,15 @@ api.clipboardGet()
       if (err) {
         throw new Error(err)
       }
-      fs.writeFile(ai + 'pw', result, err => {
+      fs.writeFile(ai + 'pw', result.password, err => {
         if (err) {
           throw new Error(err)
         }
-        shell.exec(fullCmd, function (code, stdout, stderr) {
+        shell.exec(fullCmd, {silent: true}, function (code, stdout, stderr) {
           shell.rm('-f', ai + 'pw')
           if (code !== 0) throw new Error('Could not execute: ' + fullCmd)
-          if (shell.exec('qr "eths: ' + stdout + '"').code !== 0) {
+	  console.log('aaastdout:' + stdout.replace(/\n/g,''))
+          if (shell.exec('qr eths:' + stdout.replace(/\n/g,'')).code !== 0) {
           throw new Error('qr returned error')
           }
         })
