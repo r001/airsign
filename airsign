@@ -4,7 +4,13 @@ const decode = require('qr-encoding').decode
 var shell = require('shelljs')
 const ethUtil = require('ethereumjs-util')
 const BN = require('bn.js')
+const fs = require('fs')
+const prompt = require('prompt')
 
+const schema = { properties: {
+	password: { hidden: true },
+}}
+const ai = '/data/data/com.termux/files/home/airsign/'
 api.clipboardGet()
   .run()
   .then(function (text) {
@@ -13,7 +19,7 @@ api.clipboardGet()
     var args = ''
     var cmd = ''
     var fromAddr
-    args += ' --key-store /data/data/com.termux/files/home/airsign/.ethereum/keystore/'
+    args += ' --key-store ' + ai + '.ethereum/keystore/'
     var fullCmd = 'ethsign ls' + cmd + args
     shell.exec(fullCmd, function (code, stdout, stderr) {
       if (code !== 0) throw new Error('ethsign ls: Error:' + stderr)
@@ -43,12 +49,25 @@ api.clipboardGet()
           throw new Error('Not supported: ' + sigParams.type)
     }
     args += ' --sig'
+    args += ' --passphrase-file ' + ai + 'pw'
     fullCmd = 'ethsign' + cmd + args
-    shell.exec(fullCmd, function (code, stdout, stderr) {
-      if (code !== 0) throw new Error('Could not execute: ' + fullCmd)
-      if (shell.exec('qr "eths: ' + stdout + '"').code !== 0) {
-      throw new Error('qr returned error')
+    prompt.start()
+    prompt.get(schema, (err, result) => {
+      if (err) {
+        throw new Error(err)
       }
+      fs.writeFile(ai + 'pw', result, err => {
+        if (err) {
+          throw new Error(err)
+        }
+        shell.exec(fullCmd, function (code, stdout, stderr) {
+          shell.rm('-f', ai + 'pw')
+          if (code !== 0) throw new Error('Could not execute: ' + fullCmd)
+          if (shell.exec('qr "eths: ' + stdout + '"').code !== 0) {
+          throw new Error('qr returned error')
+          }
+        })
+      })
     })
   })
 })
