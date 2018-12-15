@@ -44,7 +44,7 @@ api.clipboardGet()
           args += ' --gas-limit ' + h2i(sigParams.payload.gasLimit)
           args += ' --chain-id ' + sigParams.payload.chainId.toString()
           args += ' --nonce ' + h2i(sigParams.payload.nonce)
-          args += ' --value ' + sigParams.payload.value
+          args += ' --value ' + h2i(sigParams.payload.value)
           args += ' --data ' + sigParams.payload.data
           break
         default:
@@ -53,6 +53,7 @@ api.clipboardGet()
     args += ' --sig'
     args += ' --passphrase-file ' + ai + 'pw'
     fullCmd = 'ethsign' + cmd + args
+    console.log(args.replace(/ --/g, '\n'))
     prompt.start()
     prompt.get(schema, (err, result) => {
       if (err) {
