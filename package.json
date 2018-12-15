@@ -4,6 +4,7 @@
   "description": "Android command line signer under Termux",
   "main": "airsign",
   "dependencies": {
+    "prompt": "1.0.0",
     "termux": "1.1.0",
     "qr-encoding": "github:r001/qr-encoding#v1.1.0",
     "shelljs": "0.8.3",
