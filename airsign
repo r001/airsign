@@ -7,6 +7,7 @@ const BN = require('bn.js')
 const fs = require('fs')
 const prompt = require('prompt')
 var QRCode = require('qrcode')
+const sigUtil = require('eth-sig-util')
 
 const schema = { properties: {
 	password: { hidden: true },
@@ -30,11 +31,6 @@ api.clipboardGet()
       fromAddr = addresses.find(add => add.match(re))
       if (!fromAddr) throw new Error('Address not found for: ' + sigParams.from_part)
       switch (sigParams.type) {
-        case 'sign_message':
-          cmd += ' msg'
-          args += ' --data ' + sigParams.payload
-          args += ' --from ' + fromAddr
-          break
         case 'sign_transaction':
           cmd += ' tx'
           args += ' --from ' + fromAddr
@@ -45,6 +41,23 @@ api.clipboardGet()
           args += ' --nonce ' + h2i(sigParams.payload.nonce)
           args += ' --value ' + h2i(sigParams.payload.value)
           args += ' --data ' + sigParams.payload.data
+          break
+        case 'sign_message':
+          cmd += ' msg'
+          args += '--no-prefix '
+          args += ' --data ' + sigParams.payload
+          args += ' --from ' + fromAddr
+          break
+        case 'sign_personal_message':
+          cmd += ' msg'
+          args += ' --data ' + sigParams.payload
+          args += ' --from ' + fromAddr
+          break
+        case 'sign_typed_data':
+          cmd += ' msg'
+          args += '--no-prefix '
+          args += ' --data ' + sigUtil.TypedDataUtils.sign(JSON.parse(sigParams.payload))
+          args += ' --from ' + fromAddr
           break
         default:
           throw new Error('Not supported: ' + sigParams.type)
