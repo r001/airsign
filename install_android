@@ -13,9 +13,9 @@ git clone https://github.com/ethereum/go-ethereum.git
 mkdir -p go/src/github.com/ethereum/ 
 mv go-ethereum go/src/github.com/ethereum 
 cd go/src/github.com/ethereum/go-ethereum
-git checkout v1.8.1 
+git checkout v1.8.9 
 cd $HOME 
-git clone https://github.com/urfave/cli 
+git clone https://github.com/urfave/cli.git 
 mkdir -p go/src/gopkg.in/urfave/ 
 mv cli go/src/gopkg.in/urfave/ 
 cd go/src/gopkg.in/urfave/ 
