@@ -7,7 +7,9 @@ const BN = require('bn.js')
 const fs = require('fs')
 const prompt = require('prompt')
 var QRCode = require('qrcode')
-const sigUtil = require('eth-sig-util')
+// Currently does not install under Android
+// const sigUtil = require('eth-sig-util')
+
 
 const schema = { properties: {
 	password: { hidden: true },
@@ -54,12 +56,13 @@ api.clipboardGet()
           args += ' --data ' + sigParams.payload
           args += ' --from ' + fromAddr
           break
-        case 'sign_typed_data':
+        /* Currently the sigUtil does not install in Android  
+	case 'sign_typed_data':
           cmd += ' msg'
           args += ' --no-prefix '
           args += ' --data ' + sigUtil.TypedDataUtils.sign(JSON.parse(sigParams.payload))
           args += ' --from ' + fromAddr
-          break
+          break*/
         default:
           throw new Error('Not supported: ' + sigParams.type)
     }
