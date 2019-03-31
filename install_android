@@ -3,8 +3,8 @@ set -e
 export HOME=/data/data/com.termux/files/home
 export GOBIN=$HOME/dapptools/src/ethsign
 cd $HOME 
-pkg install golang git termux-api nodejs tar clang vim python2 yarn sed 
-#pip install qrcode  
+pkg install golang git termux-api nodejs tar clang vim python yarn sed 
+pip install qrcode  
 git clone --recursive https://github.com/dapphub/dapptools.git
 cd dapptools 
 git checkout 79cb413c5e7c99738fe262c5f8af0ce512b111c8
