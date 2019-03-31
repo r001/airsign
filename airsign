@@ -41,10 +41,11 @@ api.clipboardGet()
           args += ' --nonce ' + h2i(sigParams.payload.nonce)
           args += ' --value ' + h2i(sigParams.payload.value)
           args += ' --data ' + sigParams.payload.data
+          args += ' --sig'
           break
         case 'sign_message':
           cmd += ' msg'
-          args += '--no-prefix '
+          args += ' --no-prefix '
           args += ' --data ' + sigParams.payload
           args += ' --from ' + fromAddr
           break
@@ -55,14 +56,13 @@ api.clipboardGet()
           break
         case 'sign_typed_data':
           cmd += ' msg'
-          args += '--no-prefix '
+          args += ' --no-prefix '
           args += ' --data ' + sigUtil.TypedDataUtils.sign(JSON.parse(sigParams.payload))
           args += ' --from ' + fromAddr
           break
         default:
           throw new Error('Not supported: ' + sigParams.type)
     }
-    args += ' --sig'
     args += ' --passphrase-file ' + ai + 'pw'
     fullCmd = 'ethsign' + cmd + args
     console.log(args.replace(/ --/g, '\n'))
