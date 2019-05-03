@@ -48,12 +48,12 @@ api.clipboardGet()
         case 'sign_message':
           cmd += ' msg'
           args += ' --no-prefix '
-          args += ' --data ' + sigParams.payload
+          args += ' --data ' + '0x' + ethUtil.stripHexPrefix(sigParams.payload)
           args += ' --from ' + fromAddr
           break
         case 'sign_personal_message':
           cmd += ' msg'
-          args += ' --data ' + sigParams.payload
+          args += ' --data ' + '0x' + ethUtil.stripHexPrefix(sigParams.payload)
           args += ' --from ' + fromAddr
           break
         /* Currently the sigUtil does not install in Android  

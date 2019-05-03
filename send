@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 raw=$(cat "$1")
-linecount=${2:-400}
+linecount=${2:-1000}
 qr_count=0;
 for txl in $(echo "$raw"|sed -r "s/(.{$linecount})/\\1 /g"); do
         qr_count=$(( qr_count + 1 ))
