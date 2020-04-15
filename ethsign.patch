@@ -1,0 +1,132 @@
+diff --git a/src/ethsign/ethsign.go b/src/ethsign/ethsign.go
+index 8df3b49..1f0a23e 100644
+--- a/src/ethsign/ethsign.go
++++ b/src/ethsign/ethsign.go
+@@ -6,7 +6,6 @@ import (
+   "github.com/ethereum/go-ethereum/common/hexutil"
+   "github.com/ethereum/go-ethereum/accounts"
+   "github.com/ethereum/go-ethereum/accounts/keystore"
+-  "github.com/ethereum/go-ethereum/accounts/usbwallet"
+   "github.com/ethereum/go-ethereum/core/types"
+   "github.com/ethereum/go-ethereum/crypto"
+   "github.com/ethereum/go-ethereum/rlp"
+@@ -121,17 +120,6 @@ func main() {
+           backends = append(backends, ks)
+         }
+ 
+-        if ledgerhub, err := usbwallet.NewLedgerHub(); err != nil {
+-          fmt.Fprintf(os.Stderr, "ethsign: failed to look for USB Ledgers")
+-        } else {
+-          backends = append(backends, ledgerhub)
+-        }
+-        if trezorhub, err := usbwallet.NewTrezorHub(); err != nil {
+-          fmt.Fprintf(os.Stderr, "ethsign: failed to look for USB Trezors")
+-        } else {
+-          backends = append(backends, trezorhub)
+-        }
+-
+         manager := accounts.NewManager(backends...)
+         wallets := manager.Wallets()
+         for _, x := range(wallets) {
+@@ -139,18 +127,6 @@ func main() {
+             for _, y := range(x.Accounts()) {
+               fmt.Printf("%s keystore\n", y.Address.Hex())
+             }
+-          } else if x.URL().Scheme == "ledger" {
+-            x.Open("")
+-            for j := 0; j <= 3; j++ {
+-              pathstr := fmt.Sprintf("m/44'/60'/0'/%d", j)
+-              path, _ := accounts.ParseDerivationPath(pathstr)
+-              z, err := x.Derive(path, false)
+-              if err != nil {
+-                return cli.NewExitError("ethsign: couldn't use Ledger: needs to be in Ethereum app with browser support off", 1)
+-              } else {
+-                fmt.Printf("%s ledger-%s\n", z.Address.Hex(), pathstr)
+-              }
+-            }
+           }
+         }
+ 
+@@ -263,17 +239,6 @@ func main() {
+           backends = append(backends, ks)
+         }
+ 
+-        if ledgerhub, err := usbwallet.NewLedgerHub(); err != nil {
+-          fmt.Fprintf(os.Stderr, "ethsign: failed to look for USB Ledgers")
+-        } else {
+-          backends = append(backends, ledgerhub)
+-        }
+-        if trezorhub, err := usbwallet.NewTrezorHub(); err != nil {
+-          fmt.Fprintf(os.Stderr, "ethsign: failed to look for USB Trezors")
+-        } else {
+-          backends = append(backends, trezorhub)
+-        }
+-
+         manager := accounts.NewManager(backends...)
+         wallets := manager.Wallets()
+         var wallet accounts.Wallet
+@@ -291,23 +256,6 @@ func main() {
+                 break Scan
+               }
+             }
+-          } else if x.URL().Scheme == "ledger" {
+-            x.Open("")
+-            for j := 0; j <= 3; j++ {
+-              pathstr := fmt.Sprintf("m/44'/60'/0'/%d", j)
+-              path, _ := accounts.ParseDerivationPath(pathstr)
+-              y, err := x.Derive(path, true)
+-              if err != nil {
+-                return cli.NewExitError("ethsign: Ledger needs to be in Ethereum app with browser support off", 1)
+-              } else {
+-                if y.Address == from {
+-                  wallet = x
+-                  acct = &y
+-                  needPassphrase = false
+-                  break Scan
+-                }
+-              }
+-            }
+           }
+         }
+ 
+@@ -427,17 +375,6 @@ func main() {
+           backends = append(backends, ks)
+         }
+ 
+-        if ledgerhub, err := usbwallet.NewLedgerHub(); err != nil {
+-          fmt.Fprintf(os.Stderr, "ethsign: failed to look for USB Ledgers")
+-        } else {
+-          backends = append(backends, ledgerhub)
+-        }
+-        if trezorhub, err := usbwallet.NewTrezorHub(); err != nil {
+-          fmt.Fprintf(os.Stderr, "ethsign: failed to look for USB Trezors")
+-        } else {
+-          backends = append(backends, trezorhub)
+-        }
+-
+         manager := accounts.NewManager(backends...)
+         wallets := manager.Wallets()
+ 
+@@ -456,22 +393,6 @@ func main() {
+                 break Scan
+               }
+             }
+-          } else if x.URL().Scheme == "ledger" {
+-            x.Open("")
+-            for j := 0; j <= 3; j++ {
+-              pathstr := fmt.Sprintf("m/44'/60'/0'/%d", j)
+-              path, _ := accounts.ParseDerivationPath(pathstr)
+-              y, err := x.Derive(path, true)
+-              if err != nil {
+-                return cli.NewExitError("ethsign: Ledger needs to be in Ethereum app with browser support off", 1)
+-              }
+-              if y.Address == from {
+-                wallet = x
+-                acct = &y
+-                needPassphrase = false
+-                break Scan
+-              }
+-            }
+           }
+         }
+ 
