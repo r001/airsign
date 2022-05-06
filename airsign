@@ -7,14 +7,14 @@ const BN = require('bn.js')
 const fs = require('fs')
 const prompt = require('prompt')
 var QRCode = require('qrcode')
-// Currently does not install under Android
-// const sigUtil = require('eth-sig-util')
+const sigUtil = require('@metamask/eth-sig-util')
 
-
-const schema = { properties: {
-	password: { hidden: true },
+const schema = {properties: {
+  password: {hidden: true},
 }}
+
 const ai = '/data/data/com.termux/files/home/airsign/'
+
 api.clipboardGet()
   .run()
   .then(function (text) {
@@ -25,6 +25,7 @@ api.clipboardGet()
     var fromAddr
     args += ' --key-store ' + ai + '.ethereum/keystore/'
     var fullCmd = 'ethsign ls' + cmd + args
+
     shell.exec(fullCmd, {silent: true}, function (code, stdout, stderr) {
       if (code !== 0) throw new Error('ethsign ls: Error:' + stderr)
       var addr = stdout.replace(/^\s*(\S+)\s.*$/mg, '$1')
@@ -49,6 +50,7 @@ api.clipboardGet()
           cmd += ' msg'
           args += ' --no-prefix '
           args += ' --data ' + '0x' + ethUtil.stripHexPrefix(sigParams.payload)
+
           args += ' --from ' + fromAddr
           break
         case 'sign_personal_message':
@@ -56,42 +58,46 @@ api.clipboardGet()
           args += ' --data ' + '0x' + ethUtil.stripHexPrefix(sigParams.payload)
           args += ' --from ' + fromAddr
           break
-        /* Currently the sigUtil does not install in Android  
-	case 'sign_typed_data':
+        case 'sign_typed_data':
           cmd += ' msg'
           args += ' --no-prefix '
-          args += ' --data ' + sigUtil.TypedDataUtils.sign(JSON.parse(sigParams.payload))
+          args += ' --data ' + sigUtil.TypedDataUtils.eip712Hash(JSON.parse(sigParams.payload), sigParams.version)
           args += ' --from ' + fromAddr
-          break*/
+          break
         default:
           throw new Error('Not supported: ' + sigParams.type)
-    }
-    args += ' --passphrase-file ' + ai + 'pw'
-    fullCmd = 'ethsign' + cmd + args
-    console.log(args.replace(/ --/g, '\n'))
-    prompt.start()
-    prompt.get(schema, (err, result) => {
-      if (err) {
-        throw new Error(err)
       }
-      fs.writeFile(ai + 'pw', result.password, err => {
+      args += ' --passphrase-file ' + ai + 'pw'
+      fullCmd = 'ethsign' + cmd + args
+      console.log(args.replace(/ --/g, '\n'))
+      prompt.start()
+
+      prompt.get(schema, (err, result) => {
         if (err) {
           throw new Error(err)
         }
-        shell.exec(fullCmd, {silent: true}, function (code, stdout, stderr) {
-          shell.rm('-f', ai + 'pw')
-          if (code !== 0) throw new Error('Could not execute: ' + fullCmd)
-          const signature = 'eths:/?s=' + stdout.replace(/\n/g, '')
-          console.log('signature: ' + signature)
-          QRCode.toString(signature, {type: 'terminal'}, (err, str) => {
-            if (err) throw new Error(err)
-            console.log(str)
+
+        fs.writeFile(ai + 'pw', result.password, err => {
+          if (err) {
+            throw new Error(err)
+          }
+
+          shell.exec(fullCmd, {silent: true}, function (code, stdout) {
+            shell.rm('-f', ai + 'pw')
+            if (code !== 0) throw new Error('Could not execute: ' + fullCmd)
+            const signature = 'eths:/?s=' + stdout.replace(/\n/g, '')
+            console.log('signature: ' + signature)
+
+            QRCode.toString(signature, {type: 'terminal'}, (err, str) => {
+              if (err) throw new Error(err)
+              console.log(str)
+            })
           })
         })
       })
     })
   })
-})
+
 function h2i (hex) {
   return new BN(ethUtil.stripHexPrefix(hex), 16).toString(10)
 }
