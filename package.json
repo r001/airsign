@@ -11,7 +11,7 @@
     "prompt": "1.0.0",
     "qr-encoding": "^1.3.0",
     "qrcode": "1.3.2",
-    "shelljs": "0.8.3",
+    "shelljs": "0.8.5",
     "termux": "1.1.0"
   },
   "scripts": {
