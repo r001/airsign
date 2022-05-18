@@ -19,11 +19,15 @@ if (process.argv[2]) {
 	try {
 		decode(text)
 	} catch (e) {
+		if (!text.match(/-/)) {
+			console.log(`Could not decode.`)
+		}
+
 		inquirer.prompt([
 			{
 				type: 'input',
 				name: 'toSign',
-				message: "Could not decode.\n Qr data:",
+				message: "Qr data:",
 			}
 		]).then( (answer) => {
 			sign(answer.toSign)
