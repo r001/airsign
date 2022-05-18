@@ -1,6 +1,6 @@
 {
   "name": "airsign",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Android command line signer under Termux",
   "main": "airsign",
   "dependencies": {
@@ -10,7 +10,8 @@
     "keythereum": "^1.2.0",
     "qr-encoding": "^1.3.0",
     "qrcode": "^1.5.0",
-    "termux": "^1.1.0"
+    "termux": "^1.1.0",
+    "inquirer": "^8.2.4"
   },
   "devDependencies": {
     "eslint": "^8.15.0"

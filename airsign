@@ -1,5 +1,8 @@
 #!/usr/bin/env node
-const api = require('termux')
+var api
+if (!process.argv[2]) {
+	api = require('termux')
+}
 const decode = require('qr-encoding').decode
 const ethUtil = require('ethereumjs-util')
 const fs = require('fs')
@@ -11,20 +14,27 @@ const inquirer = require('inquirer')
 
 const ai = '/data/data/com.termux/files/home/airsign/'
 
-if (api.hasTermux) {
+if (process.argv[2]) {
+	var text = text.replace(/^\\s*/, '').replace(/\\s*$/, '')
+	try {
+		decode(text)
+	} catch (e) {
+		inquirer.prompt([
+			{
+				type: 'input',
+				name: 'toSign',
+				message: "Could not decode.\n Qr data:",
+			}
+		]).then( (answer) => {
+			sign(answer.toSign)
+		})
+
+	}
+	sign(process.argv[2])
+} else if (api.hasTermux) {
 	api.clipboardGet()
 		.run()
 		.then(sign)
-} else {
-	inquirer.prompt([
-		{
-			type: 'input',
-			name: 'toSign',
-			message: "termux-api not installed!\n Qr data:",
-		}
-	]).then( (answer) => {
-		sign(answer.toSign)
-	})
 }
 
 function sign (text) {
