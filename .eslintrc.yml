@@ -1,0 +1,63 @@
+env:
+  es6: true
+  node: true
+  mocha: true
+extends: 'eslint:recommended'
+globals:
+  Atomics: readonly
+  SharedArrayBuffer: readonly
+parserOptions:
+  ecmaVersion: 2018
+  sourceType: module
+rules: 
+  no-console: 0
+  keyword-spacing: 
+  - error
+  - before: true
+    after: true
+  eqeqeq:
+    - error
+    - always
+  comma-spacing: 
+    - error
+    - before: false
+      after: true
+  array-bracket-spacing:
+    - error
+    - never
+  space-before-function-paren:
+    - error
+    - always
+  space-before-blocks: error
+  padding-line-between-statements:
+    - error
+    - blankLine: always
+      prev: "*"
+      next: function
+    - blankLine: always
+      prev: multiline-const
+      next: "*"
+    - blankLine: always
+      prev: multiline-var
+      next: "*"
+    - blankLine: always
+      prev: multiline-let
+      next: "*"
+    - blankLine: always
+      prev: multiline-expression
+      next: "*"
+    - blankLine: always
+      next: multiline-const
+      prev: "*"
+    - blankLine: always
+      next: multiline-var
+      prev: "*"
+    - blankLine: always
+      next: multiline-let
+      prev: "*"
+    - blankLine: always
+      next: multiline-expression
+      prev: "*"
+  object-curly-spacing:
+    - error
+    - never

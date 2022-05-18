@@ -1,26 +1,24 @@
 {
   "name": "airsign",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Android command line signer under Termux",
   "main": "airsign",
   "dependencies": {
+    "@ethereumjs/tx": "^3.5.1",
     "@metamask/eth-sig-util": "^4.0.1",
-    "bn.js": "4.11.8",
-    "eslint": "^8.14.0",
-    "ethereumjs-util": "6.0.0",
-    "prompt": "1.0.0",
+    "ethereumjs-util": "^7.1.4",
+    "keythereum": "^1.2.0",
     "qr-encoding": "^1.3.0",
-    "qrcode": "1.3.2",
-    "shelljs": "0.8.3",
-    "termux": "1.1.0"
+    "qrcode": "^1.5.0",
+    "termux": "^1.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.15.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/r001/airsign.git"
-  },
+  "repository": "git+https://github.com/r001/airsign.git",
   "keywords": [
     "airsign",
     "ethereum",

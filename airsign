@@ -1,17 +1,13 @@
 #!/usr/bin/env node
 const api = require('termux')
 const decode = require('qr-encoding').decode
-var shell = require('shelljs')
 const ethUtil = require('ethereumjs-util')
-const BN = require('bn.js')
 const fs = require('fs')
-const prompt = require('prompt')
-var QRCode = require('qrcode')
+const QRCode = require('qrcode')
 const sigUtil = require('@metamask/eth-sig-util')
-
-const schema = {properties: {
-  password: {hidden: true},
-}}
+const Tx = require('@ethereumjs/tx')
+const keythereum = require("keythereum")
+const inquirer = require('inquirer')
 
 const ai = '/data/data/com.termux/files/home/airsign/'
 
@@ -20,84 +16,91 @@ api.clipboardGet()
   .then(function (text) {
     text = text.replace(/^\\s*/, '').replace(/\\s*$/, '')
     var sigParams = decode(text)
-    var args = ''
-    var cmd = ''
-    var fromAddr
-    args += ' --key-store ' + ai + '.ethereum/keystore/'
-    var fullCmd = 'ethsign ls' + cmd + args
+    var fromJson, signature, rawTx, tx
+    var keyStore = ai + '.ethereum/keystore/'
+    var re = new RegExp(sigParams.from_part.toLowerCase())
 
-    shell.exec(fullCmd, {silent: true}, function (code, stdout, stderr) {
-      if (code !== 0) throw new Error('ethsign ls: Error:' + stderr)
-      var addr = stdout.replace(/^\s*(\S+)\s.*$/mg, '$1')
-      var addresses = addr.toLowerCase().split('\n')
-      var re = new RegExp(sigParams.from_part.toLowerCase())
-      fromAddr = addresses.find(add => add.match(re))
-      if (!fromAddr) throw new Error('Address not found for: ' + sigParams.from_part)
-      switch (sigParams.type) {
-        case 'sign_transaction':
-          cmd += ' tx'
-          args += ' --from ' + fromAddr
-          args += ' --to ' + sigParams.payload.to
-          args += ' --gas-price ' + h2i(sigParams.payload.gasPrice)
-          args += ' --gas-limit ' + h2i(sigParams.payload.gasLimit)
-          args += ' --chain-id ' + sigParams.payload.chainId.toString()
-          args += ' --nonce ' + h2i(sigParams.payload.nonce)
-          args += ' --value ' + h2i(sigParams.payload.value)
-          args += ' --data ' + sigParams.payload.data
-          args += ' --sig'
-          break
-        case 'sign_message':
-          cmd += ' msg'
-          args += ' --no-prefix '
-          args += ' --data ' + '0x' + ethUtil.stripHexPrefix(sigParams.payload)
+    fs.readdir(keyStore, (err, files) => {
 
-          args += ' --from ' + fromAddr
-          break
-        case 'sign_personal_message':
-          cmd += ' msg'
-          args += ' --data ' + '0x' + ethUtil.stripHexPrefix(sigParams.payload)
-          args += ' --from ' + fromAddr
-          break
-        case 'sign_typed_data':
-          cmd += ' msg'
-          args += ' --no-prefix '
-          args += ' --data ' + sigUtil.TypedDataUtils.eip712Hash(JSON.parse(sigParams.payload), sigParams.version)
-          args += ' --from ' + fromAddr
-          break
-        default:
-          throw new Error('Not supported: ' + sigParams.type)
-      }
-      args += ' --passphrase-file ' + ai + 'pw'
-      fullCmd = 'ethsign' + cmd + args
-      console.log(args.replace(/ --/g, '\n'))
-      prompt.start()
-
-      prompt.get(schema, (err, result) => {
-        if (err) {
-          throw new Error(err)
-        }
-
-        fs.writeFile(ai + 'pw', result.password, err => {
-          if (err) {
-            throw new Error(err)
+      fromJson = files
+        .map(file => {
+          try {
+            return JSON.parse(file)
+          } catch (e) {
+            return {address: null}	
           }
-
-          shell.exec(fullCmd, {silent: true}, function (code, stdout) {
-            shell.rm('-f', ai + 'pw')
-            if (code !== 0) throw new Error('Could not execute: ' + fullCmd)
-            const signature = 'eths:/?s=' + stdout.replace(/\n/g, '')
-            console.log('signature: ' + signature)
-
-            QRCode.toString(signature, {type: 'terminal'}, (err, str) => {
-              if (err) throw new Error(err)
-              console.log(str)
-            })
-          })
         })
-      })
+        .find(json => 
+          json.address
+          .replace(/^/, '0x')
+          .toLowerCase()
+          .match(re)
+        )
+
+      if (!fromJson) throw new Error('Address not found for: ' + sigParams.from_part)
+
+      inquirer.prompt([
+        {
+          type: 'password',
+          name: 'pw',
+          message: 'Password:',
+        }
+      ]).then( (answer) => {
+        var privateKey = keythereum.recover(answer.pw, fromJson)
+        answer.pw = null
+
+        switch (sigParams.type) {
+          case 'sign_transaction':
+            rawTx = {
+              from: '0x' + ethUtil.stripHexPrefix(fromJson.address),
+              to: sigParams.payload.to,
+              gasPrice: sigParams.payload.gasPrice,
+              gasLimit: sigParams.payload.gasLimit,
+              chainId: sigParams.payload.chainId,
+              nonce: sigParams.payload.nonce,
+              value: sigParams.payload.value,
+              data: sigParams.payload.data,
+            }
+
+            tx = new Tx(rawTx)
+            tx.sign(privateKey)
+            signature = ethUtil.toRpcSig(tx.v, tx.r, tx.s, rawTx.chainId)
+            break
+          case 'sign_message':
+            signature = sigUtil.personalSign({
+              privateKey,
+              data: '0x' + ethUtil.stripHexPrefix(sigParams.payload),
+            })
+
+            break
+          case 'sign_personal_message':
+            signature = sigUtil.personalSign({
+              privateKey,
+              data: '0x' + ethUtil.stripHexPrefix(sigParams.payload),
+            })
+
+            break
+          case 'sign_typed_data':
+            signature = sigUtil.signTypedData({
+              privateKey,
+              data: '0x' + ethUtil.stripHexPrefix(sigParams.payload),
+              version: sigParams.version,
+            })
+
+            break
+          default:
+            throw new Error('Not supported: ' + sigParams.type)
+        }
+        privateKey = null	
+
+        QRCode.toString(signature, {type: 'terminal'}, (err, str) => {
+          if (err) throw new Error(err)
+          console.log(str)
+        })
+      })	
+        .catch((error) => {
+          throw new Error( `Inquirer failure: ${error.message}`)
+        })
     })
   })
 
-function h2i (hex) {
-  return new BN(ethUtil.stripHexPrefix(hex), 16).toString(10)
-}

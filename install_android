@@ -1,43 +1,8 @@
 #!/data/data/com.termux/files/usr/bin/env bash
-set -e
+set -e -x
 export HOME=/data/data/com.termux/files/home
-export GOBIN=$HOME/dapptools/src/ethsign
 cd $HOME 
-pkg install golang git termux-api nodejs tar clang vim python yarn sed binutils
+pkg install git termux-api nodejs tar vim python yarn sed -y
 pip install qrcode  
-git clone --recursive https://github.com/dapphub/dapptools.git
-cd dapptools 
-git checkout 79cb413c5e7c99738fe262c5f8af0ce512b111c8
-git apply ../airsign/ethsign.patch
-cd $HOME 
-git clone https://github.com/ethereum/go-ethereum.git 
-mkdir -p go/src/github.com/ethereum/ 
-mv go-ethereum go/src/github.com/ethereum 
-cd go/src/github.com/ethereum/go-ethereum
-git checkout v1.8.23 
-cd $HOME 
-git clone https://github.com/urfave/cli.git 
-mkdir -p go/src/gopkg.in/urfave/ 
-mv cli go/src/gopkg.in/urfave/ 
-cd go/src/gopkg.in/urfave/ 
-mv cli cli.v1 
-cd cli.v1 
-git checkout v1.19.1 
-cd $HOME 
-git clone https://go.googlesource.com/crypto 
-mkdir -p go/src/golang.org/x/ 
-mv crypto go/src/golang.org/x/ 
-cd go/src/golang.org/x/crypto 
-git checkout 94eea52f7b742c7cbe0b03b22f0c4c8631ece122 
-cd $HOME 
-git clone https://go.googlesource.com/sys 
-mkdir -p go/src/golang.org/x/ 
-mv sys go/src/golang.org/x/ 
-cd go/src/golang.org/x/sys 
-git checkout 53aa286056ef226755cd898109dbcdaba8ac0b81 
-cd $HOME 
-cd dapptools/src/ethsign 
-go install -v ethsign.go 
-cp ethsign $HOME/../usr/bin
 cd $HOME/airsign
 yarn install
