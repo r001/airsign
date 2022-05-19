@@ -27,6 +27,14 @@ if (process.argv[2]) {
 				type: 'input',
 				name: 'qr',
 				message: 'Signable:',
+				validate (value) {
+					try {
+						decode(value)
+						return true
+					} catch (e) {
+						return 'Should be something like: eths:/?t=001011....'
+					}
+				},
 				filter: String,
 			}
 		]).then((answers) => {
