@@ -1,6 +1,6 @@
 {
   "name": "airsign",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Android command line signer under Termux",
   "main": "airsign",
   "dependencies": {

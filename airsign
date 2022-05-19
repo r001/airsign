@@ -1,8 +1,4 @@
 #!/usr/bin/env node
-var api
-if (!process.argv[2]) {
-	api = require('termux')
-}
 const decode = require('qr-encoding').decode
 const ethUtil = require('ethereumjs-util')
 const fs = require('fs')
@@ -11,16 +7,24 @@ const sigUtil = require('@metamask/eth-sig-util')
 const Tx = require('@ethereumjs/tx')
 const keythereum = require("keythereum")
 const inquirer = require('inquirer')
+var api
+const arg = arg
+if (!arg) {
+	// fixed bug termux hang during loading
+	api = require('termux')
+}
 
 const ai = '/data/data/com.termux/files/home/airsign/'
 
-if (process.argv[2]) {
+if (arg) {
 	try {
-		sign(process.argv[2])
+		// `airsign ETHS:/T101105...` called
+		sign(arg)
 	} catch (e) {
-		if (!process.argv[2].match(/-/)) {
+		if (!arg.match(/-/)) {
 			console.log(`Could not decode.`)
 		}
+		// `airsign -` called
 
 		inquirer.prompt([
 			{
