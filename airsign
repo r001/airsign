@@ -4,9 +4,10 @@ const ethUtil = require('ethereumjs-util')
 const fs = require('fs')
 const QRCode = require('qrcode')
 const sigUtil = require('@metamask/eth-sig-util')
-const Tx = require('@ethereumjs/tx')
+const {Transaction} = require('@ethereumjs/tx')
 const keythereum = require("keythereum")
 const inquirer = require('inquirer')
+const Common = require('@ethereumjs/common')
 var api
 const arg = process.argv[2]
 if (!arg) {
@@ -55,7 +56,7 @@ if (arg) {
 function sign (text) {
 	text = text.replace(/^\\s*/, '').replace(/\\s*$/, '')
 	var sigParams = decode(text)
-	var fromJson, signature, rawTx, tx
+	var fromJson, signature, rawTx, tx, common
 	var keyStore = ai + '.ethereum/keystore/'
 	var re = new RegExp(sigParams.from_part.toLowerCase())
 
@@ -67,9 +68,9 @@ function sign (text) {
 		fromJson = files
 			.map(file => {
 				try {
-					return JSON.parse(file)
+					return JSON.parse(fs.readFileSync(keyStore + file))
 				} catch (e) {
-					return {address: null}	
+					return {address: ''}	
 				}
 			})
 			.find(json => 
@@ -104,7 +105,8 @@ function sign (text) {
 						data: sigParams.payload.data,
 					}
 
-					tx = new Tx(rawTx)
+					common = new Common({chain: rawTx.chainId})
+					tx = Transaction.fromTxData(rawTx, {common})
 					tx.sign(privateKey)
 					signature = ethUtil.toRpcSig(tx.v, tx.r, tx.s, rawTx.chainId)
 					break

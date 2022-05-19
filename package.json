@@ -4,14 +4,15 @@
   "description": "Android command line signer under Termux",
   "main": "airsign",
   "dependencies": {
+    "@ethereumjs/common": "^2.6.4",
     "@ethereumjs/tx": "^3.5.1",
     "@metamask/eth-sig-util": "^4.0.1",
     "ethereumjs-util": "^7.1.4",
+    "inquirer": "^8.2.4",
     "keythereum": "^1.2.0",
     "qr-encoding": "^1.4.0",
     "qrcode": "^1.5.0",
-    "termux": "^1.1.0",
-    "inquirer": "^8.2.4"
+    "termux": "^1.1.0"
   },
   "devDependencies": {
     "eslint": "^8.15.0"
