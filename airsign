@@ -87,6 +87,7 @@ function sign (text) {
 				type: 'password',
 				name: 'pw',
 				message: 'Password:',
+				mask: '*',
 			}
 		]).then( (answer) => {
 			var privateKey = keythereum.recover(answer.pw, fromJson)
