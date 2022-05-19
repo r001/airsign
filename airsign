@@ -7,7 +7,7 @@ const sigUtil = require('@metamask/eth-sig-util')
 const {Transaction} = require('@ethereumjs/tx')
 const keythereum = require("keythereum")
 const inquirer = require('inquirer')
-const Common = require('@ethereumjs/common')
+const Common = require('@ethereumjs/common').default
 var api
 const arg = process.argv[2]
 if (!arg) {
