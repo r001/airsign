@@ -8,7 +8,7 @@ const Tx = require('@ethereumjs/tx')
 const keythereum = require("keythereum")
 const inquirer = require('inquirer')
 var api
-const arg = arg
+const arg = process.argv[2]
 if (!arg) {
 	// fixed bug termux hang during loading
 	api = require('termux')
