@@ -105,10 +105,15 @@ function sign (text) {
 						data: sigParams.payload.data,
 					}
 
+					console.log(1)
 					common = new Common({chain: rawTx.chainId})
+					console.log(2)
 					tx = Transaction.fromTxData(rawTx, {common})
+					console.log(3)
 					tx.sign(privateKey)
+					console.log(4)
 					signature = ethUtil.toRpcSig(tx.v, tx.r, tx.s, rawTx.chainId)
+					console.log(5)
 					break
 				case 'sign_message':
 					signature = sigUtil.personalSign({
