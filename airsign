@@ -29,8 +29,8 @@ if (process.argv[2]) {
 				name: 'toSign',
 				message: "Qr data:",
 			}
-		]).then( (answer) => {
-			sign(answer.toSign)
+		]).then((answers) => {
+			sign(answers.toSign)
 		})
 
 	}
