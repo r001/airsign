@@ -49,6 +49,9 @@ function sign (text) {
 	var re = new RegExp(sigParams.from_part.toLowerCase())
 
 	fs.readdir(keyStore, (err, files) => {
+		if (err) {
+			throw new Error(err.stack);
+		}
 
 		fromJson = files
 			.map(file => {
