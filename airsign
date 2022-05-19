@@ -131,7 +131,7 @@ function sign (text) {
 			}
 			privateKey = null	
 
-			QRCode.toString(signature, {type: 'terminal'}, (err, str) => {
+			QRCode.toString(signature, (err, str) => {
 				if (err) throw new Error(err)
 				console.log(str)
 			})
