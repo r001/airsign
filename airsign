@@ -15,26 +15,25 @@ const inquirer = require('inquirer')
 const ai = '/data/data/com.termux/files/home/airsign/'
 
 if (process.argv[2]) {
-	var text = process.argv[2].replace(/^\\s*/, '').replace(/\\s*$/, '')
 	try {
-		decode(text)
+		sign(process.argv[2])
 	} catch (e) {
-		if (!text.match(/-/)) {
+		if (!process.argv[2].match(/-/)) {
 			console.log(`Could not decode.`)
 		}
 
 		inquirer.prompt([
 			{
 				type: 'input',
-				name: 'toSign',
-				message: "Qr data:",
+				name: 'qr',
+				message: 'Signable:',
+				filter: String,
 			}
 		]).then((answers) => {
-			sign(answers.toSign)
+			sign(answers.qr)
 		})
 
 	}
-	sign(text)
 } else if (api.hasTermux) {
 	api.clipboardGet()
 		.run()
