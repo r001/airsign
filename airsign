@@ -112,13 +112,12 @@ function sign (text) {
 					tx = tx.toJSON()
 
 					signature = ethUtil.toRpcSig(
-						Buffer.from(Buffer.from(tx.v), 'hex'),
-						Buffer.from(Buffer.from(tx.r), 'hex'),
-						Buffer.from(Buffer.from(tx.s), 'hex'),
+						Buffer.from(ethUtil.stripHexPrefix(tx.v), 'hex'),
+						Buffer.from(ethUtil.stripHexPrefix(tx.r), 'hex'),
+						Buffer.from(ethUtil.stripHexPrefix(tx.s), 'hex'),
 						rawTx.chainId
 					)
 
-					console.log(5)
 					break
 				case 'sign_message':
 					signature = sigUtil.personalSign({
