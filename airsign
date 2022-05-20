@@ -144,9 +144,11 @@ function sign (text) {
 				default:
 					throw new Error('Not supported: ' + sigParams.type)
 			}
-			privateKey = null	
 
-			for (var type in ['terminal', 'utf8', 'svg']) {
+			privateKey = null	
+			const types = ['terminal', 'utf8', 'svg']	
+
+			types.forEach(type => {
 				QRCode.toString(signature, {type}, (err, str) => {
 					if (err) throw new Error(err)
 					if (type === 'terminal') {
@@ -154,7 +156,7 @@ function sign (text) {
 					}
 					fs.writeFileSync(`qr.${type}`, Buffer.from(str))
 				})
-			}
+			})
 		})	
 			.catch((error) => {
 				throw new Error( `Inquirer failure: ${error.stack}`)
