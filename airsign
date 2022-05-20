@@ -106,19 +106,15 @@ function sign (text) {
 						data: sigParams.payload.data,
 					}
 
-					console.log(1)
 					common = new Common({chain: rawTx.chainId})
-					console.log(2)
 					tx = Transaction.fromTxData(rawTx, {common})
-					console.log(3)
 					tx = tx.sign(privateKey)
 					tx = tx.toJSON()
-					console.log(4)
 
 					signature = ethUtil.toRpcSig(
-						Buffer.from(tx.v, 'hex'),
-						Buffer.from(tx.r, 'hex'),
-						Buffer.from(tx.s, 'hex'),
+						Buffer.from(Buffer.from(tx.v), 'hex'),
+						Buffer.from(Buffer.from(tx.r), 'hex'),
+						Buffer.from(Buffer.from(tx.s), 'hex'),
 						rawTx.chainId
 					)
 
