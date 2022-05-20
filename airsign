@@ -114,7 +114,14 @@ function sign (text) {
 					tx = tx.sign(privateKey)
 					tx = tx.toJSON()
 					console.log(4)
-					signature = ethUtil.toRpcSig(tx.v, tx.r, tx.s, rawTx.chainId)
+
+					signature = ethUtil.toRpcSig(
+						Buffer.from(tx.v, 'hex'),
+						Buffer.from(tx.r, 'hex'),
+						Buffer.from(tx.s, 'hex'),
+						rawTx.chainId
+					)
+
 					console.log(5)
 					break
 				case 'sign_message':
@@ -144,13 +151,18 @@ function sign (text) {
 			}
 			privateKey = null	
 
-			QRCode.toString(signature, (err, str) => {
-				if (err) throw new Error(err)
-				console.log(str)
-			})
+			for (var type in ['terminal', 'utf8', 'svg']) {
+				QRCode.toString(signature, {type}, (err, str) => {
+					if (err) throw new Error(err)
+					if (type === 'terminal') {
+						console.log(str)
+					}
+					fs.writeFileSync(`qr.${type}`, Buffer.from(str))
+				})
+			}
 		})	
 			.catch((error) => {
-				throw new Error( `Inquirer failure: ${error.message}`)
+				throw new Error( `Inquirer failure: ${error.stack}`)
 			})
 	})
 }
