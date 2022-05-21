@@ -10,10 +10,12 @@ const inquirer = require('inquirer')
 const Common = require('@ethereumjs/common').default
 var api
 const arg = process.argv[2]
+
 if (!arg) {
 	// fixed bug termux hang during loading
 	api = require('termux')
 }
+
 
 const ai = '/data/data/com.termux/files/home/airsign/'
 
@@ -151,12 +153,18 @@ function sign (text) {
 			types.forEach(type => {
 				QRCode.toString(signature, {type}, (err, str) => {
 					if (err) throw new Error(err)
-					if (type === 'terminal') {
-						console.log(str)
-					}
 					fs.writeFileSync(`qr.${type}`, Buffer.from(str))
 				})
 			})
+
+			var type = 'terminal'
+			while (type) {
+				QRCode.toString(signature, {type}, (err, str) => {
+					if (err) throw new Error(err)
+					console.log(str)
+
+				})
+			}
 		})	
 			.catch((error) => {
 				throw new Error( `Inquirer failure: ${error.stack}`)
