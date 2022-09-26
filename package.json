@@ -1,6 +1,6 @@
 {
   "name": "airsign",
-  "version": "1.4.8",
+  "version": "1.4.9",
   "description": "Android command line signer under Termux",
   "main": "airsign",
   "dependencies": {
@@ -10,7 +10,7 @@
     "ethereumjs-util": "^7.1.4",
     "inquirer": "^8.2.4",
     "keythereum": "^1.2.0",
-    "qr-encoding": "^1.4.0",
+    "qr-encoding": "^1.4.2",
     "qrcode": "^1.5.0",
     "termux": "^1.1.0"
   },

@@ -138,7 +138,7 @@ function sign (text) {
 				case 'sign_typed_data':
 					signature = sigUtil.signTypedData({
 						privateKey,
-						data: '0x' + ethUtil.stripHexPrefix(sigParams.payload),
+						data: JSON.parse(ethUtil.stripHexPrefix(sigParams.payload)),
 						version: sigParams.version,
 					})
 
