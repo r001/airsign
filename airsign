@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const decode = require('qr-encoding').decode
-const ethUtil = require('ethereumjs-util')
+const {stripHexPrefix, toRpcSig} = require('@ethereumjs/util')
 const fs = require('fs')
 const QRCode = require('qrcode')
 const sigUtil = require('@metamask/eth-sig-util')
@@ -98,7 +98,7 @@ function sign (text) {
 			switch (sigParams.type) {
 				case 'sign_transaction':
 					rawTx = {
-						from: '0x' + ethUtil.stripHexPrefix(fromJson.address),
+						from: '0x' + stripHexPrefix(fromJson.address),
 						to: sigParams.payload.to,
 						gasPrice: sigParams.payload.gasPrice,
 						gasLimit: sigParams.payload.gasLimit,
@@ -111,12 +111,12 @@ function sign (text) {
 					common = new Common({chain: rawTx.chainId})
 					tx = Transaction.fromTxData(rawTx, {common})
 					tx = tx.sign(privateKey)
-					tx = tx.toJSON()
+					//tx = tx.toJSON()
 
-					signature = ethUtil.toRpcSig(
-						Buffer.from(ethUtil.stripHexPrefix(tx.v), 'hex'),
-						Buffer.from(ethUtil.stripHexPrefix(tx.r), 'hex'),
-						Buffer.from(ethUtil.stripHexPrefix(tx.s), 'hex'),
+					signature = toRpcSig(
+						tx.v,
+						tx.r,
+						tx.s,
 						rawTx.chainId
 					)
 
@@ -124,21 +124,21 @@ function sign (text) {
 				case 'sign_message':
 					signature = sigUtil.personalSign({
 						privateKey,
-						data: '0x' + ethUtil.stripHexPrefix(sigParams.payload),
+						data: '0x' + stripHexPrefix(sigParams.payload),
 					})
 
 					break
 				case 'sign_personal_message':
 					signature = sigUtil.personalSign({
 						privateKey,
-						data: '0x' + ethUtil.stripHexPrefix(sigParams.payload),
+						data: '0x' + stripHexPrefix(sigParams.payload),
 					})
 
 					break
 				case 'sign_typed_data':
 					signature = sigUtil.signTypedData({
 						privateKey,
-						data: JSON.parse(ethUtil.stripHexPrefix(sigParams.payload)),
+						data: JSON.parse(stripHexPrefix(sigParams.payload)),
 						version: sigParams.version,
 					})
 

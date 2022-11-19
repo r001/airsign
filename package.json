@@ -7,7 +7,7 @@
     "@ethereumjs/common": "^2.6.4",
     "@ethereumjs/tx": "^3.5.1",
     "@metamask/eth-sig-util": "^4.0.1",
-    "ethereumjs-util": "^7.1.4",
+		"@ethereumjs/util": "^8.0.2",
     "inquirer": "^8.2.4",
     "keythereum": "^1.2.0",
     "qr-encoding": "^1.4.2",
