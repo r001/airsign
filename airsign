@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 const decode = require('qr-encoding').decode
-const {stripHexPrefix, toRpcSig} = require('@ethereumjs/util')
+const {stripHexPrefix, toBuffer, toRpcSig} = require('@ethereumjs/util')
 const fs = require('fs')
 const QRCode = require('qrcode')
 const sigUtil = require('@metamask/eth-sig-util')
 const {Transaction} = require('@ethereumjs/tx')
 const keythereum = require("keythereum")
 const inquirer = require('inquirer')
-const Common = require('@ethereumjs/common').default
+const {Common} = require('@ethereumjs/common')
 var api
 const arg = process.argv[2]
 
@@ -94,7 +94,6 @@ function sign (text) {
 		]).then( (answer) => {
 			var privateKey = keythereum.recover(answer.pw, fromJson)
 			answer.pw = null
-
 			switch (sigParams.type) {
 				case 'sign_transaction':
 					rawTx = {
@@ -111,13 +110,12 @@ function sign (text) {
 					common = new Common({chain: rawTx.chainId})
 					tx = Transaction.fromTxData(rawTx, {common})
 					tx = tx.sign(privateKey)
-					//tx = tx.toJSON()
 
 					signature = toRpcSig(
 						tx.v,
-						tx.r,
-						tx.s,
-						rawTx.chainId
+						toBuffer(tx.r === '' ? '0x' : tx.r),
+						toBuffer(tx.s === '' ? '0x' : tx.s),
+						BigInt(rawTx.chainId)
 					)
 
 					break
@@ -162,7 +160,9 @@ function sign (text) {
 				QRCode.toString(signature, {type}, (err, str) => {
 					if (err) throw new Error(err)
 					console.log(str)
+					console.log(signature)
 
+				  require('child_process').spawnSync("read _ ", {shell: true, stdio: [0, 1, 2]});
 				})
 			}
 		})	
