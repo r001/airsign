@@ -1,11 +1,11 @@
 {
   "name": "airsign",
-  "version": "1.4.9",
+  "version": "1.4.10",
   "description": "Android command line signer under Termux",
   "main": "airsign",
   "dependencies": {
-    "@ethereumjs/common": "^2.6.4",
-    "@ethereumjs/tx": "^3.5.1",
+    "@ethereumjs/common": "^3.0.1",
+    "@ethereumjs/tx": "^4.0.1",
     "@metamask/eth-sig-util": "^4.0.1",
 		"@ethereumjs/util": "^8.0.2",
     "inquirer": "^8.2.4",
