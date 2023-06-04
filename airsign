@@ -1,13 +1,15 @@
 #!/usr/bin/env node
-const decode = require('qr-encoding').decode
-const {stripHexPrefix, toBuffer, toRpcSig} = require('@ethereumjs/util')
-const fs = require('fs')
 const QRCode = require('qrcode')
-const sigUtil = require('@metamask/eth-sig-util')
-const {Transaction} = require('@ethereumjs/tx')
-const keythereum = require("keythereum")
+const decode = require('qr-encoding').decode
+const fs = require('fs')
 const inquirer = require('inquirer')
+const keythereum = require("keythereum")
+const sigUtil = require('@metamask/eth-sig-util')
+const {DataType, EthSignRequest} = require('@keystonehq/bc-ur-registry-eth')
+const {URRegistryDecoder} = require('@keystonehq/bc-ur-registry-eth')
 const {Common} = require('@ethereumjs/common')
+const {Transaction, FeeMarketEIP1559Transaction} = require('@ethereumjs/tx')
+const {stripHexPrefix, toBuffer, toRpcSig} = require('@ethereumjs/util')
 var api
 const arg = process.argv[2]
 
@@ -50,15 +52,31 @@ if (arg) {
 
 	}
 } else if (api.hasTermux) {
-	api.clipboardGet()
-		.run()
-		.then(sign)
+	var decoder = new URRegistryDecoder()
+	var needMoreData = true
+	var ur
+
+	(async () => {
+		while (needMoreData) {
+			ur = await api.clipboardGet().run()
+			needMoreData = decoder.receivePart(ur)
+			await sleep(500)
+		}
+		var ethSignRequest = EthSignRequest.fromCBOR(decoder.resultUR().decodeCBOR())
+		sign(ethSignRequest)
+	})()
 }
 
-function sign (text) {
-	text = text.replace(/^\\s*/, '').replace(/\\s*$/, '')
+function sleep (ms) {
+	return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+
+function sign (ethSignReq) {
+	let ethSignRequest = EthSignRequest.fromCBOR(ethSignReq.toCBOR())
+	// TODO: start from here!!!!!
 	var sigParams = decode(text)
-	var fromJson, signature, rawTx, tx, common
+	var fromJson, signature, common
 	var keyStore = ai + '.ethereum/keystore/'
 	var re = new RegExp(sigParams.from_part.toLowerCase())
 
@@ -94,21 +112,18 @@ function sign (text) {
 		]).then( (answer) => {
 			var privateKey = keythereum.recover(answer.pw, fromJson)
 			answer.pw = null
+			const EIP_1599_TRANSACTION_TYPE = 2
+			const EIP_1599_TRANSACTION_TYPE_BUFFER = Buffer.from(EIP_1599_TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
+			let tx, rlpTx, EIP_1599
 			switch (sigParams.type) {
 				case 'sign_transaction':
-					rawTx = {
-						from: '0x' + stripHexPrefix(fromJson.address),
-						to: sigParams.payload.to,
-						gasPrice: sigParams.payload.gasPrice,
-						gasLimit: sigParams.payload.gasLimit,
-						chainId: sigParams.payload.chainId,
-						nonce: sigParams.payload.nonce,
-						value: sigParams.payload.value,
-						data: sigParams.payload.data,
+					rlpTx = ethSignRequest.getSignData()
+					EIP_1599 = rlpTx.subarray(0, 1).equals(EIP_1599_TRANSACTION_TYPE_BUFFER)
+					if (EIP_1599) {
+						tx = FeeMarketEIP1559Transaction.fromSerializedTx(rlpTx)
+					} else {
+						tx = Transaction.fromSerializedTx(rlpTx)
 					}
-
-					common = new Common({chain: rawTx.chainId})
-					tx = Transaction.fromTxData(rawTx, {common})
 					tx = tx.sign(privateKey)
 
 					signature = toRpcSig(
