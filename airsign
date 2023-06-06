@@ -7,7 +7,7 @@ const sigUtil = require('@metamask/eth-sig-util')
 const {DataType, EthSignRequest, ETHSignature, DataItem, URRegistryDecoder, CryptoKeypath, PathComponent} = require('@keystonehq/bc-ur-registry-eth')
 const {Transaction, FeeMarketEIP1559Transaction} = require('@ethereumjs/tx')
 const {stripHexPrefix, toBuffer, toRpcSig} = require('@ethereumjs/util')
-const {keccak256} = require('ethereum-cryptography') 
+const {keccak256} = require('ethereum-cryptography/keccak') 
 const rlp = require('@ethereumjs/rlp')
 const {promisify} = require('es6-promisify')
 const readdir = promisify(fs.readdir)
@@ -18,7 +18,7 @@ const arg = process.argv[2]
 const ai = '/data/data/com.termux/files/home/airsign/'
 
 ;(async () => {
-
+try {
 	if (!arg) {
 		// fixed bug termux hang during loading
 		api = require('termux')
@@ -72,6 +72,10 @@ const ai = '/data/data/com.termux/files/home/airsign/'
 	}
 
 	process.exit(0)
+} catch (e) {
+	console.error(e.stack)
+	process.exit(1)
+}
 })()
 
 async function sign (ethSignRequest) {
