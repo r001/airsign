@@ -10,6 +10,7 @@
     "@ethereumjs/util": "^8.0.6",
     "@keystonehq/bc-ur-registry-eth": "^0.19.1",
     "@metamask/eth-sig-util": "^5.1.0",
+    "@ngraveio/bc-ur": "^1.1.6",
     "es6-promisify": "^7.0.0",
     "ethereum-cryptography": "^2.0.0",
     "inquirer": "^8.2.4",

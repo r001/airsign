@@ -4,7 +4,8 @@ const fs = require('fs')
 const inquirer = require('inquirer')
 const keythereum = require("keythereum")
 const sigUtil = require('@metamask/eth-sig-util')
-const {DataType, EthSignRequest, ETHSignature, DataItem, URRegistryDecoder, CryptoKeypath, PathComponent} = require('@keystonehq/bc-ur-registry-eth')
+const {DataType, EthSignRequest, ETHSignature, DataItem, CryptoKeypath, PathComponent} = require('@keystonehq/bc-ur-registry-eth')
+const {URDecoder} = require('@ngraveio/bc-ur')
 const {Transaction, FeeMarketEIP1559Transaction} = require('@ethereumjs/tx')
 const {stripHexPrefix, toBuffer, toRpcSig} = require('@ethereumjs/util')
 const {keccak256} = require('ethereum-cryptography/keccak') 
@@ -41,7 +42,7 @@ try {
 					message: 'Signable:',
 					validate (value) {
 						try {
-							var decoder = new URRegistryDecoder()
+							var decoder = new URDecoder()
 							needMoreData = decoder.receivePart(value)
 							return true
 						} catch (e) {
@@ -55,7 +56,7 @@ try {
 			await sign(answers.qr)
 		}
 	} else if (api.hasTermux) {
-		var decoder = new URRegistryDecoder()
+		var decoder = new URDecoder()
 		var needMoreData = true
 		var ur
 
