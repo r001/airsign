@@ -29,7 +29,7 @@ try {
 
 	if (arg) {
 		try {
-			await sign(arg)
+			await sign(EthSignRequest.fromCBOR(Buffer.from(arg, 'hex')))
 		} catch (e) {
 			if (!arg.match(/-/)) {
 				console.log(`Could not decode.`)
