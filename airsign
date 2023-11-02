@@ -4,18 +4,36 @@ const fs = require('fs')
 const inquirer = require('inquirer')
 const keythereum = require("keythereum")
 const sigUtil = require('@metamask/eth-sig-util')
-const {DataType, EthSignRequest, ETHSignature, DataItem, CryptoKeypath, PathComponent} = require('@keystonehq/bc-ur-registry-eth')
+const {DataType, EthSignRequest, ETHSignature, CryptoKeypath, PathComponent} = require('@keystonehq/bc-ur-registry-eth')
 const {URDecoder} = require('@ngraveio/bc-ur')
-const {Common, Chain, Hardfork} = require('@ethereumjs/common')
+const {Common, Hardfork} = require('@ethereumjs/common')
 const {Transaction, FeeMarketEIP1559Transaction} = require('@ethereumjs/tx')
 const {stripHexPrefix, toBuffer, toRpcSig} = require('@ethereumjs/util')
 const {keccak256} = require('ethereum-cryptography/keccak') 
 const rlp = require('@ethereumjs/rlp')
 const {promisify} = require('es6-promisify')
 const readdir = promisify(fs.readdir)
+const childProcess = require('node:child_process')
 
 var api
 const arg = process.argv[2]
+
+const color = {
+	blue: '\x1b[34m',
+	red: '\x1b[31m',
+	green: '\x1b[32m',
+	yellow: '\x1b[33m',
+	reset: '\x1b[0m',
+	cyan: '\x1b[36m',
+	magenta: '\x1b[35m',
+	bright_green: '\x1b[92m',
+	bright_yellow: '\x1b[93m',
+	bright_red: '\x1b[91m',
+	bright_blue: '\x1b[94m',
+	bright_cyan: '\x1b[96m',
+	bright_white: '\x1b[97m',
+	bright_magenta: '\x1b[95m',
+}
 
 const ai = '/data/data/com.termux/files/home/airsign/'
 
@@ -62,9 +80,9 @@ try {
 
 		console.log(`Receiving data from clipboard... (press Ctrl+C to cancel)`)
 		while (!decoder.isComplete()) {
-			ur = await api.clipboardGet().run()
+			ur = childProcess.spawnSync('termux-clipboard-get').stdout.toString().trim()
 			console.log(ur)
-			decoder.receivePart(ur)
+			if (ur.match(/ur:eth-sign-request/)) decoder.receivePart(ur)
 			await sleep(1000)
 		}
 
@@ -106,21 +124,11 @@ async function sign (ethSignRequest) {
 
 	if (!fromJson) throw new Error('Address not found for: ' + ethSignRequest.getDerivationPath().toString())
 
-	let answer = await inquirer.prompt([
-		{
-			type: 'password',
-			name: 'pw',
-			message: 'Password:',
-			mask: '*',
-		}
-	])
-
-	var privateKey = keythereum.recover(answer.pw, fromJson)
-	answer.pw = null
 	const EIP_1599_TRANSACTION_TYPE = 2
 	const EIP_1599_TRANSACTION_TYPE_BUFFER = Buffer.from(EIP_1599_TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
-	let tx, data, version, type, signature, rlpDecoded, txData, common, chainId
+	let tx, data, version, type, signature, rlpDecoded, txData, common
 	let rlpEncoded = ethSignRequest.getSignData()
+	const nc = color.bright_blue
 	switch (ethSignRequest.getDataType()) {
 		case DataType.typedTransaction:
 			type = rlpEncoded.subarray(0, 1)
@@ -130,27 +138,18 @@ async function sign (ethSignRequest) {
 			}
 
 			tx = FeeMarketEIP1559Transaction.fromSerializedTx(rlpEncoded)
-			console.log('EIP-1559 transaction detected')
-			console.log(`From: ${fromJson.address}`)
-			console.log(`To: ${tx.to.toString()}`)
-			console.log(`ChainId: ${tx.chainId}`)
-			console.log(`Nonce: ${tx.nonce}`)
-			console.log(`Max Priority Fee Per Gas: ${tx.maxPriorityFeePerGas}`)
-			console.log(`Max Fee Per Gas: ${tx.maxFeePerGas}`)
-			console.log(`Gas Limit: ${tx.gasLimit}`)
-			console.log(`Value: ${tx.value}`)
-			console.log(`Data: ${tx.data.toString('hex')}`)
-			console.log(`Access List: ${JSON.stringify(tx.toJSON().accessList)}`)
+			console.log(`${color.green}EIP-1559 transaction detected${color.reset}`)
+			console.log(`${nc}From: ${color.blue}0x${fromJson.address}${color.reset}`)
+			console.log(`${nc}To: ${color.green}${tx.to.toString()}${color.reset}`)
+			console.log(`${nc}ChainId: ${color.reset}${tx.chainId}${color.reset}`)
+			console.log(`${nc}Nonce: ${color.cyan}${tx.nonce}${color.reset}`)
+			console.log(`${nc}Max Priority Fee Per Gas: ${color.magenta}${tx.maxPriorityFeePerGas}${color.reset}`)
+			console.log(`${nc}Max Fee Per Gas: ${color.yellow}${tx.maxFeePerGas}${color.reset}`)
+			console.log(`${nc}Gas Limit: ${color.red}${tx.gasLimit}${color.reset}`)
+			console.log(`${nc}Value: ${color.blue}${tx.value}${color.reset}`)
+			console.log(`${nc}Data: ${color.green}${tx.data.toString('hex')}${color.reset}`)
+			console.log(`${nc}Access List: ${color.bright_white}${JSON.stringify(tx.toJSON().accessList)}${color.reset}`)
 			
-			tx = tx.sign(privateKey)
-
-			signature = toRpcSig(
-				tx.v,
-				toBuffer(tx.r),
-				toBuffer(tx.s),
-				tx.common.chainId
-			)
-
 			break
 		case DataType.transaction:
 			rlpDecoded = rlp.decode(rlpEncoded).map(item => Buffer.from(item))
@@ -168,16 +167,65 @@ async function sign (ethSignRequest) {
 			common = new Common({chain: txData.chainId, hardfork: Hardfork.Shanghai})
 			tx = Transaction.fromTxData(txData, {common})
 
-			console.log('Legacy transaction detected')
-			console.log(`From: ${fromJson.address}`)
-			console.log(`To: ${tx.toString()}`)
-			console.log(`Gas Price: ${tx.gasPrice}`)
-			console.log(`Gas Limit: ${tx.gasLimit}`)
-			console.log(`Value: ${tx.value}`)
-			console.log(`Data: 0x${tx.data.toString('hex')}`)
-			console.log(`Nonce: ${tx.nonce}`)
+			console.log(`${color.green}Legacy transaction detected${color.reset}`)
+			console.log(`${nc}From: ${color.blue}0x${fromJson.address}${color.reset}`)
+			console.log(`${nc}To: ${color.green}${tx.toString()}${color.reset}`)
+			console.log(`${nc}Gas Price: ${color.green}${tx.gasPrice}${color.reset}`)
+			console.log(`${nc}Gas Limit: ${color.red}${tx.gasLimit}${color.reset}`)
+			console.log(`${nc}Value: ${color.blue}${tx.value}${color.reset}`)
+			console.log(`${nc}Data: ${color.green}0x${tx.data.toString('hex')}${color.reset}`)
+			console.log(`${nc}Nonce: ${color.cyan}${tx.nonce}${color.reset}`)
 
+			break
+		case DataType.personalMessage:
+			console.log(`${color.green}Personal message detected${color.reset}`)
+			console.log(`${nc}From: ${color.blue}${fromJson.address}${color.reset}`)
+			data = Buffer.from(rlp.decode(rlpEncoded))
+			console.log(`${nc}Message: ${color.green}${data.toString('utf8')}${color.reset}`)
 
+			break
+		case DataType.typedData:
+			[version, data] = rlp.decode(rlpEncoded)
+			version = Buffer.from(version)
+			data = Buffer.from(data)
+			version = `V${version.toString('utf8')}`
+			data = JSON.parse(data.toString('utf8'))
+
+			console.log(`${color.green}Typed data detected${color.reset}`)
+			console.log(`${nc}From: ${color.blue}${fromJson.address}${color.reset}`)
+			console.log(`${nc}Version: ${color.yellow}${version}${color.reset}`)
+			console.log(`${nc}Data: ${color.green}${JSON.stringify(data, null, 2)}${color.reset}`)
+			
+			break
+		default:
+			throw new Error(`${color.bright_red}Type not supported: ${color.bright_white}${ethSignRequest.getDataType()}${color.reset}`)
+	}
+
+	let answer = await inquirer.prompt([
+		{
+			type: 'password',
+			name: 'pw',
+			message: 'Password:',
+			mask: '*',
+		}
+	])
+
+	var privateKey = keythereum.recover(answer.pw, fromJson)
+	answer.pw = null
+
+	switch (ethSignRequest.getDataType()) {
+		case DataType.typedTransaction:
+			tx = tx.sign(privateKey)
+
+			signature = toRpcSig(
+				tx.v,
+				toBuffer(tx.r),
+				toBuffer(tx.s),
+				tx.common.chainId
+			)
+
+			break
+		case DataType.transaction:
 			tx = tx.sign(privateKey)
 
 			signature = toRpcSig(
@@ -189,11 +237,6 @@ async function sign (ethSignRequest) {
 
 			break
 		case DataType.personalMessage:
-			console.log('Personal message detected')
-			console.log(`From: ${fromJson.address}`)
-			data = Buffer.from(rlp.decode(rlpEncoded))
-			console.log(`Message: ${data.toString('utf8')}`)
-
 			signature = sigUtil.personalSign({
 				privateKey,
 				data,
@@ -201,17 +244,6 @@ async function sign (ethSignRequest) {
 
 			break
 		case DataType.typedData:
-			[version, data] = rlp.decode(rlpEncoded)
-			version = Buffer.from(version)
-			data = Buffer.from(data)
-			version = `V${version.toString('utf8')}`
-			data = JSON.parse(data.toString('utf8'))
-
-			console.log('Typed data detected')
-			console.log(`From: ${fromJson.address}`)
-			console.log(`Version: ${version}`)
-			console.log(`Data: ${JSON.stringify(data, null, 2)}`)
-			
 			signature = sigUtil.signTypedData({
 				privateKey,
 				data,
@@ -220,7 +252,7 @@ async function sign (ethSignRequest) {
 
 			break
 		default:
-			throw new Error('Type not supported: ' + ethSignRequest.getDataType())
+			throw new Error(`${color.bright_red}Type not supported: ${color.bright_white}${ethSignRequest.getDataType()}${color.reset}`)
 	}
 
 	privateKey = null	
