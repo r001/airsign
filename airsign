@@ -8,8 +8,8 @@ const {DataType, EthSignRequest, ETHSignature, CryptoKeypath, PathComponent} = r
 const {URDecoder} = require('@ngraveio/bc-ur')
 const {Common, Hardfork} = require('@ethereumjs/common')
 const {Transaction, FeeMarketEIP1559Transaction} = require('@ethereumjs/tx')
-const {stripHexPrefix, toBuffer, toRpcSig} = require('@ethereumjs/util')
-const {keccak256} = require('ethereum-cryptography/keccak') 
+const {stripHexPrefix, toBuffer, toRpcSig, ecsign, bufferToHex} = require('@ethereumjs/util')
+const {keccak256} = require('ethereum-cryptography/keccak')
 const rlp = require('@ethereumjs/rlp')
 const {promisify} = require('es6-promisify')
 const readdir = promisify(fs.readdir)
@@ -35,7 +35,6 @@ const color = {
 	bright_magenta: '\x1b[95m',
 }
 
-const ai = '/data/data/com.termux/files/home/airsign/'
 
 ;(async () => {
 try {
@@ -46,34 +45,56 @@ try {
 
 
 	if (arg) {
-		try {
-			await sign(EthSignRequest.fromCBOR(Buffer.from(arg, 'hex')))
-		} catch (e) {
-			if (!arg.match(/-/)) {
-				console.log(`Could not decode.`)
+		if (arg.match(/^-h$/)) {
+			//airsign -h 0x0004d2A2f9a823C1A585fDE6514A17FF695E 0x27bbaef94405e79a71dcffcb9eeb11534ede08cc7950c1d46a6d492869c0a4a5 
+			var txHash = process.argv[4]
+			var address = process.argv[3]
+			let fromJson = await find_key_data(false, null, address)
+			let privateKey = await get_privatekey(fromJson)
+
+		  // Ensure that the txHash is 32 bytes long (i.e., a valid keccak256 hash)
+			if (txHash.length !== 66) {
+				throw new Error('Invalid transaction hash length. It must be 64 chars plus "0x".');
 			}
-			// `airsign -` called
 
-			let answers = inquirer.prompt([
-				{
-					type: 'input',
-					name: 'qr',
-					message: 'Signable:',
-					validate (value) {
-						try {
-							var decoder = new URDecoder()
-							decoder.receivePart(value)
-							return true
-						} catch (e) {
-							return 'Should be something like: ur:eth-sign-request/...'
+			// Sign the transaction hash
+				const { r, s, v } = ecsign(stripHexPrefix(txHash), stripHexPrefix(privateKey.tostring('hex')))
+
+			// Convert r, s, and v to hex strings and concatenate them
+			const signatureHex = bufferToHex(Buffer.concat([r, s, Buffer.from(v.toString(16).padstart(2, '0'), 'hex')]))
+
+			display_qr(signatureHex)
+
+		} else {
+				try {
+					await sign(EthSignRequest.fromCBOR(Buffer.from(arg, 'hex')))
+				} catch (e) {
+					if (!arg.match(/-/)) {
+						console.log(`Could not decode.`)
+					}
+					// `airsign -` called
+
+					let answers = inquirer.prompt([
+						{
+							type: 'input',
+							name: 'qr',
+							message: 'Signable:',
+							validate (value) {
+								try {
+									var decoder = new URDecoder()
+									decoder.receivePart(value)
+									return true
+								} catch (e) {
+									return 'Should be something like: ur:eth-sign-request/...'
+								}
+							},
+							filter: String,
 						}
-					},
-					filter: String,
-				}
-			])
+					])
 
-			await sign(answers.qr)
-		}
+					await sign(answers.qr)
+				}
+	  }
 	} else if (api.hasTermux) {
 		var decoder = new URDecoder()
 		var ur
@@ -104,26 +125,7 @@ try {
 })()
 
 async function sign (ethSignRequest) {
-	var keyStore = ai + '.ethereum/keystore/'
-	let parentFingerprint = Buffer.from('12345678', 'hex')
-
-	let files = await readdir(keyStore) 
-
-	let	fromJson = files
-		.map(file => {
-			try {
-				return JSON.parse(fs.readFileSync(keyStore + file))
-			} catch (e) {
-				return {address: ''}	
-			}
-		})
-		.find(json => 
-			(!!json.address) && getFakeDerivePath(json.address, parentFingerprint) === 
-			ethSignRequest.getDerivationPath()
-		)
-
-	if (!fromJson) throw new Error('Address not found for: ' + ethSignRequest.getDerivationPath().toString())
-
+	let fromJson = await find_key_data(true,ethSignRequest)
 	const EIP_1599_TRANSACTION_TYPE = 2
 	const EIP_1599_TRANSACTION_TYPE_BUFFER = Buffer.from(EIP_1599_TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
 	let tx, data, version, type, signature, rlpDecoded, txData, common
@@ -149,11 +151,11 @@ async function sign (ethSignRequest) {
 			console.log(`${nc}Value: ${color.blue}${tx.value}${color.reset}`)
 			console.log(`${nc}Data: ${color.green}${tx.data.toString('hex')}${color.reset}`)
 			console.log(`${nc}Access List: ${color.bright_white}${JSON.stringify(tx.toJSON().accessList)}${color.reset}`)
-			
+
 			break
 		case DataType.transaction:
 			rlpDecoded = rlp.decode(rlpEncoded).map(item => Buffer.from(item))
-			
+
 			txData = {
 				nonce: BigInt(`0x${rlpDecoded[0].toString('hex')}`),
 				gasPrice: BigInt(`0x${rlpDecoded[1].toString('hex')}`),
@@ -195,23 +197,13 @@ async function sign (ethSignRequest) {
 			console.log(`${nc}From: ${color.blue}${fromJson.address}${color.reset}`)
 			console.log(`${nc}Version: ${color.yellow}${version}${color.reset}`)
 			console.log(`${nc}Data: ${color.green}${JSON.stringify(data, null, 2)}${color.reset}`)
-			
+
 			break
 		default:
 			throw new Error(`${color.bright_red}Type not supported: ${color.bright_white}${ethSignRequest.getDataType()}${color.reset}`)
 	}
 
-	let answer = await inquirer.prompt([
-		{
-			type: 'password',
-			name: 'pw',
-			message: 'Password:',
-			mask: '*',
-		}
-	])
-
-	var privateKey = keythereum.recover(answer.pw, fromJson)
-	answer.pw = null
+	var privateKey = await get_privatekey(fromJson)
 
 	switch (ethSignRequest.getDataType()) {
 		case DataType.typedTransaction:
@@ -255,27 +247,10 @@ async function sign (ethSignRequest) {
 			throw new Error(`${color.bright_red}Type not supported: ${color.bright_white}${ethSignRequest.getDataType()}${color.reset}`)
 	}
 
-	privateKey = null	
-	const types = ['terminal', 'utf8', 'svg']	
+	privateKey = null
 	let ur = (new ETHSignature(Buffer.from(stripHexPrefix(signature), 'hex'), ethSignRequest.getRequestId(), ethSignRequest.getOrigin())).toUREncoder(500)
 	let urPart = ur.nextPart()
-
-	types.forEach(type => {
-		QRCode.toString(urPart, {type}, (err, str) => {
-			if (err) throw new Error(err)
-			fs.writeFileSync(`qr.${type}`, Buffer.from(str, 'utf8'))
-		})
-	})
-
-	// eslint-disable-next-line no-constant-condition
-	while (true) {
-		QRCode.toString(urPart, {type: "terminal"}, (err, str) => {
-			if (err) throw new Error(err)
-			console.log(str)
-			console.log(urPart)
-			require('child_process').spawnSync("read _ ", {shell: true, stdio: [0, 1, 2]});
-		})
-	}
+	display_qr(urPart)
 }
 
 function sleep (ms) {
@@ -288,4 +263,64 @@ function getFakeDerivePath (address) {
 		[0, 1, 2, 3].map(index => new PathComponent({index: addressHash.at(index), hardened:true})))).getPath()
 }
 
+async function find_key_data(useDerivationPath = true, ethSignRequest, address) {
+	const ai = '/data/data/com.termux/files/home/airsign/'
+	let parentFingerprint = Buffer.from('12345678', 'hex')
+	var keyStore = ai + '.ethereum/keystore/'
+	let files = await readdir(keyStore)
+	let fromJson
+	let	fromJsons = files
+		.map(file => {
+			try {
+				return JSON.parse(fs.readFileSync(keyStore + file))
+			} catch (e) {
+				return {address: ''}
+			}
+		})
+	if(useDerivationPath) {
+		fromJson=fromJsons.find(json =>
+			(!!json.address) && getFakeDerivePath(json.address, parentFingerprint) ===
+			ethSignRequest.getDerivationPath()
+		)
+	} else {
+		fromJson = fromJsons.find(json => (!!json.address) && '0x' + json.address.toLowerCase() === address.toLowerCase())
+	}
 
+	if (!fromJson) throw new Error('Address not found.')
+	return fromJson
+}
+
+async function get_privatekey(fromJson) {
+	let answer = await inquirer.prompt([
+		{
+			type: 'password',
+			name: 'pw',
+			message: 'Password:',
+			mask: '*',
+		}
+	])
+
+	var privateKey = keythereum.recover(answer.pw, fromJson)
+	answer.pw = null
+	return privateKey
+}
+
+function display_qr(toQrString) {
+	const types = ['terminal', 'utf8', 'svg']
+	types.forEach(type => {
+		QRCode.toString(toQrString, {type}, (err, str) => {
+			if (err) throw new Error(err)
+			fs.writeFileSync(`qr.${type}`, Buffer.from(str, 'utf8'))
+		})
+	})
+
+	// eslint-disable-next-line no-constant-condition
+	while (true) {
+		QRCode.toString(toQrString, {type: "terminal"}, (err, str) => {
+			if (err) throw new Error(err)
+			console.log(str)
+			console.log(toQrString)
+			require('child_process').spawnSync("read _ ", {shell: true, stdio: [0, 1, 2]});
+		})
+	}
+}
